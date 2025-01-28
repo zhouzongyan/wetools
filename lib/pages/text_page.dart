@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/clipboard_util.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'dart:convert';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_selectable_text.dart';
 
 class TextPage extends StatefulWidget {
   const TextPage({super.key});
@@ -141,15 +143,9 @@ GBK字节数: $gbkBytes''';
                       children: [
                         Expanded(
                           flex: 2,
-                          child: TextField(
+                          child: CustomTextField(
                             controller: _inputController,
-                            style: const TextStyle(
-                              fontFamily: 'JetBrainsMono',
-                              fontSize: 14,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: '输入要处理的文本',
-                            ),
+                            hintText: '输入要处理的文本',
                             maxLines: 8,
                           ),
                         ),
@@ -226,7 +222,7 @@ GBK字节数: $gbkBytes''';
                               ],
                             ),
                             const SizedBox(height: 4),
-                            SelectableText(_result),
+                            CustomSelectableText(_result),
                             if (_stats.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               const Divider(),
@@ -235,7 +231,7 @@ GBK字节数: $gbkBytes''';
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
-                              SelectableText(_stats),
+                              CustomSelectableText(_stats),
                             ],
                           ],
                         ),
