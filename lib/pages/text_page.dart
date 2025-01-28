@@ -198,10 +198,18 @@ GBK字节数: $gbkBytes''';
                     if (_result.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(4),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.deepPurple.withOpacity(0.1),
+                              Colors.deepPurple.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,18 +229,19 @@ GBK字节数: $gbkBytes''';
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            CustomSelectableText(_result),
+                            const SizedBox(height: 12),
+                            SelectableText(_result),
                             if (_stats.isNotEmpty) ...[
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 16),
                               const Divider(),
                               const SizedBox(height: 8),
                               const Text('统计信息:',
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              CustomSelectableText(_stats),
+                              const SizedBox(height: 12),
+                              SelectableText(_stats),
                             ],
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),

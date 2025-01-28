@@ -141,10 +141,18 @@ class _JsonPageState extends State<JsonPage> {
                       if (_result.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.1),
+                                Colors.deepPurple.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,8 +172,9 @@ class _JsonPageState extends State<JsonPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               SelectableText(_result),
+                              const SizedBox(height: 32),
                             ],
                           ),
                         ),

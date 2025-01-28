@@ -31,14 +31,22 @@ class _Base64PageState extends State<Base64Page> {
 
   void _decodeBase64() {
     try {
-      final bytes = base64.decode(_decodeController.text);
+      final bytes = base64.decode(_decodeController.text.trim());
       final decoded = utf8.decode(bytes);
       setState(() {
         _decodeResult = decoded;
       });
     } catch (e) {
       setState(() {
-        _decodeResult = '错误: 无效的 Base64 格式';
+        if (e is FormatException) {
+          _decodeResult = '错误: 无效的 Base64 格式\n'
+              '提示：\n'
+              '1. Base64 字符串只能包含 A-Z、a-z、0-9、+、/ 和 = 字符\n'
+              '2. 字符串长度必须是 4 的倍数（可能需要补充 = 号）\n'
+              '3. 中文等非 ASCII 字符需要先进行 Base64 编码';
+        } else {
+          _decodeResult = '错误: ${e.toString()}';
+        }
       });
     }
   }
@@ -88,10 +96,18 @@ class _Base64PageState extends State<Base64Page> {
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.1),
+                                Colors.deepPurple.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,8 +127,9 @@ class _Base64PageState extends State<Base64Page> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               SelectableText(_encodeResult),
+                              const SizedBox(height: 16),
                             ],
                           ),
                         ),
@@ -147,7 +164,7 @@ class _Base64PageState extends State<Base64Page> {
               'Base64 解码',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -167,12 +184,20 @@ class _Base64PageState extends State<Base64Page> {
                         enableInteractiveSelection: true,
                       ),
                       if (_decodeResult.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 32),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.1),
+                                Colors.deepPurple.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,11 +217,13 @@ class _Base64PageState extends State<Base64Page> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               SelectableText(_decodeResult),
+                              const SizedBox(height: 16),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 32),
                       ],
                     ],
                   ),

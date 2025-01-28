@@ -114,34 +114,44 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.deepPurple.withOpacity(0.1),
+                            Colors.deepPurple.withOpacity(0.05),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '系统时间',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
+                              const Text('当前时间:',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              const Spacer(),
                               IconButton(
-                                icon: const Icon(Icons.refresh),
-                                onPressed: _updateCurrentTime,
-                                tooltip: '刷新当前时间',
+                                icon: const Icon(Icons.copy, size: 20),
+                                onPressed: () => ClipboardUtil.copyToClipboard(
+                                    _currentTime, context),
+                                tooltip: '复制结果',
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          CustomSelectableText(_currentTime),
+                          const SizedBox(height: 12),
+                          SelectableText(_currentTime),
+                          const SizedBox(height: 16),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                     Text(
                       '输入时间',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -174,10 +184,11 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                       ],
                     ),
                     if (_result.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 32),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -200,17 +211,16 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                                 const Spacer(),
                                 IconButton(
                                   icon: const Icon(Icons.copy, size: 20),
-                                  onPressed: () {
-                                    final content = _result.trim();
-                                    ClipboardUtil.copyToClipboard(
-                                        content, context);
-                                  },
+                                  onPressed: () =>
+                                      ClipboardUtil.copyToClipboard(
+                                          _result, context),
                                   tooltip: '复制结果',
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            CustomSelectableText(_result),
+                            const SizedBox(height: 12),
+                            SelectableText(_result),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),

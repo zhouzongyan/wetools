@@ -85,10 +85,18 @@ class _UrlPageState extends State<UrlPage> {
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.1),
+                                Colors.deepPurple.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,8 +116,9 @@ class _UrlPageState extends State<UrlPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               SelectableText(_encodeResult),
+                              const SizedBox(height: 32),
                             ],
                           ),
                         ),
@@ -166,10 +175,18 @@ class _UrlPageState extends State<UrlPage> {
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.deepPurple.withOpacity(0.1),
+                                Colors.deepPurple.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,8 +206,9 @@ class _UrlPageState extends State<UrlPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 12),
                               SelectableText(_decodeResult),
+                              const SizedBox(height: 32),
                             ],
                           ),
                         ),
