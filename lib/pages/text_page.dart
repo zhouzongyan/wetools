@@ -116,124 +116,134 @@ GBK字节数: $gbkBytes''';
               '文本工具',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 4),
-            const Text(
+            const SizedBox(height: 8),
+            Text(
               '文本格式化、统计及标点符号转换工具,结果中包含统计信息',
-              style: TextStyle(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: _inputController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要处理的文本',
-                        ),
-                        maxLines: 8,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
-                        onChanged: (value) {
-                          if (_result.isNotEmpty) {
-                            setState(() {
-                              _result = '';
-                              _stats = '';
-                            });
-                          }
-                        },
-                      ),
-                      if (_result.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
+            const SizedBox(height: 24),
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '输入文本',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            controller: _inputController,
+                            style: const TextStyle(
+                              fontFamily: 'JetBrainsMono',
+                              fontSize: 14,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: '输入要处理的文本',
+                            ),
+                            maxLines: 8,
                           ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 1,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 20),
-                                    onPressed: () =>
-                                        ClipboardUtil.copyToClipboard(
-                                            _result, context),
-                                    tooltip: '复制结果',
-                                  ),
-                                ],
+                              ElevatedButton(
+                                onPressed: _trimText,
+                                child: const Text('去除首尾空白'),
                               ),
-                              const SizedBox(height: 4),
-                              SelectableText(_result),
-                              if (_stats.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                const Divider(),
-                                const SizedBox(height: 8),
-                                const Text('统计信息:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                SelectableText(_stats),
-                              ],
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: _toUpperCase,
+                                child: const Text('转大写'),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: _toLowerCase,
+                                child: const Text('转小写'),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: _chineseToPunctuation,
+                                child: const Text('中文标点转英文'),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: _punctuationToChinese,
+                                child: const Text('英文标点转中文'),
+                              ),
+                              const SizedBox(height: 8),
+                              OutlinedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _inputController.clear();
+                                    _result = '';
+                                    _stats = '';
+                                  });
+                                },
+                                child: const Text('清除'),
+                              ),
                             ],
                           ),
                         ),
                       ],
+                    ),
+                    if (_result.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('结果:',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                const Spacer(),
+                                IconButton(
+                                  icon: const Icon(Icons.copy, size: 20),
+                                  onPressed: () =>
+                                      ClipboardUtil.copyToClipboard(
+                                          _result, context),
+                                  tooltip: '复制结果',
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            SelectableText(_result),
+                            if (_stats.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              const Text('统计信息:',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              SelectableText(_stats),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _trimText,
-                      child: const Text('去除首尾空白'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _toUpperCase,
-                      child: const Text('转大写'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _toLowerCase,
-                      child: const Text('转小写'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _chineseToPunctuation,
-                      child: const Text('中文标点转英文'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _punctuationToChinese,
-                      child: const Text('英文标点转中文'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _inputController.clear();
-                          _result = '';
-                          _stats = '';
-                        });
-                      },
-                      child: const Text('清除'),
-                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ],
         ),

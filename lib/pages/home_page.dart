@@ -6,6 +6,7 @@ import 'json_page.dart';
 import 'hash_page.dart';
 import 'text_page.dart';
 import 'about_page.dart';
+import 'time_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -45,8 +46,12 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('Text'),
     ),
     NavigationRailDestination(
+      icon: Icon(Icons.access_time),
+      label: Text('Time'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.info_outline),
-      label: Text('关于'),
+      label: Text('About'),
     ),
   ];
 
@@ -57,7 +62,30 @@ class _MyHomePageState extends State<MyHomePage> {
     JsonPage(),
     HashPage(),
     TextPage(),
+    TimePage(),
     AboutPage(),
+  ];
+
+  final List<String> _titles = [
+    'JWT',
+    'URL',
+    'Base64',
+    'JSON',
+    'Hash',
+    'Text',
+    '时间工具',
+    'About',
+  ];
+
+  final List<IconData> _icons = [
+    Icons.security,
+    Icons.link,
+    Icons.code,
+    Icons.data_object,
+    Icons.key,
+    Icons.text_fields,
+    Icons.access_time,
+    Icons.info,
   ];
 
   @override

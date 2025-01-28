@@ -76,7 +76,8 @@ class AboutPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     InkWell(
-                      onTap: () => _launchUrl('https://github.com/ayuayue/wetools'),
+                      onTap: () =>
+                          _launchUrl('https://github.com/ayuayue/wetools'),
                       child: const Text(
                         'GitHub 仓库',
                         style: TextStyle(
@@ -99,6 +100,40 @@ class AboutPage extends StatelessWidget {
                       '使用 Flutter 开发，支持跨平台运行。\n\n'
                       '本项目开源，欢迎贡献代码或提出建议。',
                     ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      '支持作者:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/wechat_pay.png',
+                              width: 150,
+                              height: 150,
+                            ),
+                            const Text('微信支付'),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/alipay.png',
+                              width: 150,
+                              height: 150,
+                            ),
+                            const Text('支付宝'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -108,4 +143,4 @@ class AboutPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

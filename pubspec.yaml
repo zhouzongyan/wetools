@@ -94,6 +94,24 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
+  fonts:  
+    - family: SourceHanSansSC
+      fonts:
+        - asset: assets/fonts/SourceHanSansSC-Regular.otf
+        - asset: assets/fonts/SourceHanSansSC-Medium.otf
+          weight: 500
+        - asset: assets/fonts/SourceHanSansSC-Bold.otf
+          weight: 700
+    - family: JetBrainsMono   
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Regular.ttf
+        - asset: assets/fonts/JetBrainsMono-Bold.ttf
+          weight: 700
+
+  assets:
+    - assets/images/wechat_pay.png
+    - assets/images/alipay.png
+
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
