@@ -24,7 +24,49 @@ class AboutPage extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepPurple.withOpacity(0.1),
+                    Colors.deepPurple.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '关于本工具',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  const SelectableText('''
+这是一个简单的开发者工具集合，包含了常用的编码解码、格式化等功能。
+
+主要功能：
+• Base64 编码解码
+• URL 编码解码
+• JSON 格式化
+• 时间戳转换
+• Hash 计算（MD5/SHA1/SHA256/SM3）
+• JWT 解析
+• 文本处理工具
+
+
+'''),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
             Card(
+              color: Colors.grey.shade100,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -39,22 +81,6 @@ class AboutPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text('版本: 1.0.0'),
-                    const SizedBox(height: 16),
-                    const Text(
-                      '功能介绍:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text('''
-• JWT 编解码工具
-• URL 编解码工具
-• Base64 编解码工具
-• JSON 格式化工具
-• Hash 计算工具
-• 文本处理工具'''),
                     const SizedBox(height: 16),
                     const Text(
                       '开发者:',
