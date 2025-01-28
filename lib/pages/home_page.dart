@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'jwt_page.dart';
 import 'url_page.dart';
 import 'base64_page.dart';
+import 'json_page.dart';
+import 'hash_page.dart';
+import 'text_page.dart';
+import 'about_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -28,12 +32,32 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.code),
       label: Text('Base64'),
     ),
+    NavigationRailDestination(
+      icon: Icon(Icons.data_object),
+      label: Text('JSON'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.key),
+      label: Text('Hash'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.text_fields),
+      label: Text('Text'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.info_outline),
+      label: Text('关于'),
+    ),
   ];
 
   final List<Widget> _pages = const [
     JwtPage(),
     UrlPage(),
     Base64Page(),
+    JsonPage(),
+    HashPage(),
+    TextPage(),
+    AboutPage(),
   ];
 
   @override

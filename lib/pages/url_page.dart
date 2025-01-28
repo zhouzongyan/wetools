@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../utils/clipboard_util.dart';
 
 class UrlPage extends StatefulWidget {
@@ -79,6 +78,9 @@ class _UrlPageState extends State<UrlPage> {
                           hintText: '输入要编码的 URL',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -157,6 +159,9 @@ class _UrlPageState extends State<UrlPage> {
                           hintText: '输入要解码的 URL',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),

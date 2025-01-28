@@ -81,6 +81,9 @@ class _Base64PageState extends State<Base64Page> {
                           hintText: '输入要编码的文本',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -159,6 +162,9 @@ class _Base64PageState extends State<Base64Page> {
                           hintText: '输入要解码的 Base64 字符串',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),

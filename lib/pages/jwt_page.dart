@@ -115,6 +115,9 @@ class _JwtPageState extends State<JwtPage> {
                           hintText: '输入要编码的数据（JSON格式）',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -193,6 +196,9 @@ class _JwtPageState extends State<JwtPage> {
                           hintText: '输入要解码的 JWT token',
                         ),
                         maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        textInputAction: TextInputAction.newline,
+                        enableInteractiveSelection: true,
                       ),
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
