@@ -154,7 +154,7 @@ class _HashPageState extends State<HashPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              SelectableText(_result),
+                              Text(_result),
                               const SizedBox(height: 16),
                             ],
                           ),

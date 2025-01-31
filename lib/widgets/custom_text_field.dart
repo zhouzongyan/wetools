@@ -7,6 +7,8 @@ class CustomTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
+  final TextInputType? keyboardType;
+  final TextStyle? textStyle;
 
   const CustomTextField({
     super.key,
@@ -16,6 +18,8 @@ class CustomTextField extends StatelessWidget {
     this.textInputAction,
     this.onSubmitted,
     this.autofocus = false,
+    this.keyboardType,
+    this.textStyle,
   });
 
   @override
@@ -27,27 +31,22 @@ class CustomTextField extends StatelessWidget {
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.all(12),
       ),
-      style: const TextStyle(
-        fontFamily: 'JetBrainsMono',
-        fontSize: 14,
-      ),
+      style: textStyle ??
+          const TextStyle(
+            fontFamily: 'JetBrainsMono',
+            fontSize: 14,
+          ),
       maxLines: maxLines,
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
       autofocus: autofocus,
-      enableInteractiveSelection: true,
+      keyboardType: keyboardType ??
+          (maxLines == 1 ? TextInputType.text : TextInputType.multiline),
       contextMenuBuilder: (context, editableTextState) {
         return AdaptiveTextSelectionToolbar.editableText(
           editableTextState: editableTextState,
         );
       },
-      keyboardType: maxLines == 1 ? TextInputType.text : TextInputType.multiline,
-      toolbarOptions: const ToolbarOptions(
-        copy: true,
-        cut: true,
-        paste: true,
-        selectAll: true,
-      ),
     );
   }
-} 
+}

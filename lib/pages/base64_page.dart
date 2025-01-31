@@ -128,7 +128,7 @@ class _Base64PageState extends State<Base64Page> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              CustomSelectableText(
+                              Text(
                                 _encodeResult,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
@@ -221,7 +221,7 @@ class _Base64PageState extends State<Base64Page> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              CustomSelectableText(
+                              Text(
                                 _decodeResult,
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
@@ -256,30 +256,6 @@ class _Base64PageState extends State<Base64Page> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class CustomSelectableText extends StatelessWidget {
-  final String text;
-  final TextStyle? style;
-
-  const CustomSelectableText(
-    this.text, {
-    super.key,
-    this.style,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.text,
-      child: SelectionArea(
-        child: Text(
-          text,
-          style: style,
         ),
       ),
     );

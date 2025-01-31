@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/clipboard_util.dart';
 import '../widgets/custom_text_field.dart';
-import '../widgets/custom_selectable_text.dart';
 
 class TimePage extends StatefulWidget {
   const TimePage({super.key});
@@ -138,7 +137,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                     ],
                   ),
                   const SizedBox(height: 12),
-                  SelectableText(
+                  Text(
                     _currentTime,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
@@ -212,7 +211,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                       ],
                     ),
                     const SizedBox(height: 12),
-                    CustomSelectableText(
+                    Text(
                       _result,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),

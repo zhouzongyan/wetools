@@ -229,7 +229,7 @@ GBK字节数: $gbkBytes''';
                               ],
                             ),
                             const SizedBox(height: 12),
-                            SelectableText(_result),
+                            Text(_result),
                             if (_stats.isNotEmpty) ...[
                               const SizedBox(height: 16),
                               const Divider(),
@@ -238,7 +238,7 @@ GBK字节数: $gbkBytes''';
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 12),
-                              SelectableText(_stats),
+                              Text(_stats),
                             ],
                             const SizedBox(height: 16),
                           ],

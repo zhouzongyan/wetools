@@ -5,8 +5,19 @@
 
 一个使用 Flutter 开发的轻量级开发者工具箱，提供常用的编码解码、格式化、加密等功能。
 
+![alt text](./assets/images/长截图_20250131_212816.png)
+![alt text](./assets/images/长截图_20250131_212236.png)
+![alt text](./assets/images/wetools.exe_20250131_212044.png)
+![alt text](./assets/images/长截图_20250131_212358.png)
+![alt text](./assets/images/wetools.exe_20250131_212517.png)
+![alt text](./assets/images/wetools.exe_20250131_212601.png)
+![alt text](./assets/images/wetools.exe_20250131_212700.png)
+![alt text](./assets/images/长截图_20250131_212733.png)
+
+
 ![alt text](./assets/gif/录屏_20250128_232717.gif)
 ![alt text](./assets/gif/录屏_20250128_233004.gif)
+
 ## 最近更新
 
 - 新增 About 页面，展示项目信息和作者联系方式
