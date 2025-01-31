@@ -173,7 +173,7 @@ class _JsonPageState extends State<JsonPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              SelectableText(_result),
+                              SelectionArea(child: Text(_result)),
                               const SizedBox(height: 32),
                             ],
                           ),

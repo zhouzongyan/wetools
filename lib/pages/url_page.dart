@@ -117,7 +117,7 @@ class _UrlPageState extends State<UrlPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              SelectableText(_encodeResult),
+                              SelectionArea(child: Text(_encodeResult)),
                               const SizedBox(height: 32),
                             ],
                           ),

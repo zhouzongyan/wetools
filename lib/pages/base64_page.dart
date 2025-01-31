@@ -128,7 +128,10 @@ class _Base64PageState extends State<Base64Page> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              SelectableText(_encodeResult),
+                              CustomSelectableText(
+                                _encodeResult,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                               const SizedBox(height: 16),
                             ],
                           ),
@@ -218,7 +221,10 @@ class _Base64PageState extends State<Base64Page> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              SelectableText(_decodeResult),
+                              CustomSelectableText(
+                                _decodeResult,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
                               const SizedBox(height: 16),
                             ],
                           ),
@@ -250,6 +256,30 @@ class _Base64PageState extends State<Base64Page> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomSelectableText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+
+  const CustomSelectableText(
+    this.text, {
+    super.key,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.text,
+      child: SelectionArea(
+        child: Text(
+          text,
+          style: style,
         ),
       ),
     );

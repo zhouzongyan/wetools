@@ -106,129 +106,121 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                   ),
             ),
             const SizedBox(height: 24),
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepPurple.withOpacity(0.1),
+                    Colors.deepPurple.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('当前时间:',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.copy, size: 20),
+                        onPressed: () => ClipboardUtil.copyToClipboard(
+                            _currentTime, context),
+                        tooltip: '复制结果',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SelectableText(
+                    _currentTime,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              '输入时间',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            CustomTextField(
+              controller: _inputController,
+              hintText: '输入时间戳或日期时间（如：2024-01-01 12:00:00）',
+              maxLines: 1,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _convertTime(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _convertTime,
+                  child: const Text('转换'),
+                ),
+                OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _inputController.clear();
+                      _result = '';
+                    });
+                  },
+                  child: const Text('清除'),
+                ),
+              ],
+            ),
+            if (_result.isNotEmpty) ...[
+              const SizedBox(height: 32),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.deepPurple.withOpacity(0.1),
+                      Colors.deepPurple.withOpacity(0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.deepPurple.withOpacity(0.1),
-                            Colors.deepPurple.withOpacity(0.05),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Text('当前时间:',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.copy, size: 20),
-                                onPressed: () => ClipboardUtil.copyToClipboard(
-                                    _currentTime, context),
-                                tooltip: '复制结果',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SelectableText(_currentTime),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      '输入时间',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    CustomTextField(
-                      controller: _inputController,
-                      hintText: '输入时间戳或日期时间（如：2024-01-01 12:00:00）',
-                      maxLines: 1,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _convertTime(),
-                    ),
-                    const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        ElevatedButton(
-                          onPressed: _convertTime,
-                          child: const Text('转换'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              _inputController.clear();
-                              _result = '';
-                            });
-                          },
-                          child: const Text('清除'),
+                        const Text('转换结果:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 20),
+                          onPressed: () =>
+                              ClipboardUtil.copyToClipboard(_result, context),
+                          tooltip: '复制结果',
                         ),
                       ],
                     ),
-                    if (_result.isNotEmpty) ...[
-                      const SizedBox(height: 32),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.deepPurple.withOpacity(0.1),
-                              Colors.deepPurple.withOpacity(0.05),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('转换结果:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                const Spacer(),
-                                IconButton(
-                                  icon: const Icon(Icons.copy, size: 20),
-                                  onPressed: () =>
-                                      ClipboardUtil.copyToClipboard(
-                                          _result, context),
-                                  tooltip: '复制结果',
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            SelectableText(_result),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ],
+                    const SizedBox(height: 12),
+                    CustomSelectableText(
+                      _result,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),

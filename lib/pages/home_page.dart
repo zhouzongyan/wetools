@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'jwt_page.dart';
-import 'url_page.dart';
-import 'base64_page.dart';
-import 'json_page.dart';
-import 'hash_page.dart';
-import 'text_page.dart';
+import 'package:wetools/pages/base64_page.dart';
+import 'package:wetools/pages/hash_page.dart';
+import 'package:wetools/pages/json_page.dart';
+import 'package:wetools/pages/jwt_page.dart';
+import 'package:wetools/pages/text_page.dart';
+import 'package:wetools/pages/url_page.dart';
 import 'about_page.dart';
 import 'time_page.dart';
 

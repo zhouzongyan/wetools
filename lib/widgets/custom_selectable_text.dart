@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../utils/clipboard_util.dart';
 
 class CustomSelectableText extends StatelessWidget {

@@ -3,7 +3,6 @@ import '../utils/clipboard_util.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'dart:convert';
 import '../widgets/custom_text_field.dart';
-import '../widgets/custom_selectable_text.dart';
 
 class TextPage extends StatefulWidget {
   const TextPage({super.key});
