@@ -1,0 +1,67 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            output-name: wetools-windows.zip
+            build-command: flutter build windows
+            artifact-path: build/windows/x64/runner/Release
+          - os: macos-latest
+            output-name: wetools-macos.zip
+            build-command: flutter build macos
+            artifact-path: build/macos/Build/Products/Release/wetools.app
+          - os: ubuntu-latest
+            output-name: wetools-linux.tar.gz
+            build-command: flutter build linux
+            artifact-path: build/linux/x64/release/bundle
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+      
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev
+      
+      - name: Build
+        run: |
+          flutter config --enable-windows-desktop
+          flutter config --enable-macos-desktop
+          flutter config --enable-linux-desktop
+          flutter pub get
+          ${{ matrix.build-command }}
+      
+      - name: Create Archive
+        run: |
+          cd ${{ matrix.artifact-path }}
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ../../../${{ matrix.output-name }} .
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            zip -r ../../../${{ matrix.output-name }} .
+          else
+            tar czf ../../../${{ matrix.output-name }} .
+          fi
+        shell: bash
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ matrix.output-name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
