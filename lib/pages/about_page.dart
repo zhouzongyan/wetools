@@ -13,15 +13,15 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectionArea(
-      child: SingleChildScrollView(
+    return Scaffold(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'About',
+                '关于',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 20),
@@ -43,12 +43,12 @@ class AboutPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SelectableText(
+                    Text(
                       '关于本工具',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
-                    const SelectableText('''
+                    const Text('''
       这是一个简单的开发者工具集合，包含了常用的编码解码、格式化等功能。
       
       主要功能：
@@ -73,7 +73,7 @@ class AboutPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SelectableText(
+                      const Text(
                         '开发者工具箱',
                         style: TextStyle(
                           fontSize: 24,
@@ -81,9 +81,9 @@ class AboutPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const SelectableText('版本: 1.0.0'),
+                      const Text('版本: 1.0.0'),
                       const SizedBox(height: 16),
-                      const SelectableText(
+                      const Text(
                         '开发者:',
                         style: TextStyle(
                           fontSize: 18,
@@ -91,8 +91,8 @@ class AboutPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const SelectableText('作者: caoayu'),
-                      const SelectableText('邮箱: 1401262639@qq.com'),
+                      const Text('作者: caoayu'),
+                      const Text('邮箱: 1401262639@qq.com'),
                       const SizedBox(height: 16),
                       const Text(
                         '项目信息:',
@@ -114,7 +114,7 @@ class AboutPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const SelectableText(
+                      const Text(
                         '说明:',
                         style: TextStyle(
                           fontSize: 18,
@@ -122,7 +122,7 @@ class AboutPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const SelectableText(
+                      const Text(
                         '这是一个为开发者设计的工具箱，提供了常用的编码解码、格式化、加密等功能。'
                         '使用 Flutter 开发，支持跨平台运行。\n\n'
                         '本项目开源，欢迎贡献代码或提出建议。',
