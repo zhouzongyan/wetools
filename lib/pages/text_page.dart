@@ -24,7 +24,6 @@ class _TextPageState extends State<TextPage> {
     '；': ';',
     '：': ':',
     '"': '"',
-    '"': '"',
     ''': '\'',
     ''': '\'',
     '（': '(',
