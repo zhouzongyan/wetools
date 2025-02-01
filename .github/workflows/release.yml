@@ -31,7 +31,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'  # 使用你指定的 Flutter 版本
+          flutter-version: '3.27.3'  # 升级到 3.27.3
           channel: 'stable'
 
       - name: Install Linux dependencies
