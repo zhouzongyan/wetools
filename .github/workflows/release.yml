@@ -2,19 +2,19 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "v*"  # 当推送的标签以 "v" 开头时触发（例如 v1.0.0）
 
 jobs:
   build-and-release:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         include:
           - os: windows-latest
             output-name: wetools-windows.zip
             build-command: flutter build windows
-            artifact-path: build/windows/x64/runner/Release
+            artifact-path: build/windows/runner/Release
           - os: macos-latest
             output-name: wetools-macos.zip
             build-command: flutter build macos
@@ -25,29 +25,32 @@ jobs:
             artifact-path: build/linux/x64/release/bundle
 
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Flutter
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.3'
+          flutter-version: '3.16.0'  # 使用你指定的 Flutter 版本
           channel: 'stable'
-      
+
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build libgtk-3-dev
-      
-      - name: Build
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build application
         run: |
           flutter config --enable-windows-desktop
           flutter config --enable-macos-desktop
           flutter config --enable-linux-desktop
-          flutter pub get
           ${{ matrix.build-command }}
-      
-      - name: Create Archive
+
+      - name: Create archive
         run: |
           cd ${{ matrix.artifact-path }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
@@ -58,10 +61,30 @@ jobs:
             tar czf ../../../${{ matrix.output-name }} .
           fi
         shell: bash
-      
-      - name: Release
-        uses: softprops/action-gh-release@v1
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          files: ${{ matrix.output-name }}
+          name: ${{ matrix.output-name }}
+          path: ${{ matrix.output-name }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ matrix.output-name }}
+          asset_name: ${{ matrix.output-name }}
+          asset_content_type: application/zip

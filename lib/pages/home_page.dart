@@ -66,27 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
     AboutPage(),
   ];
 
-  final List<String> _titles = [
-    'JWT',
-    'URL',
-    'Base64',
-    'JSON',
-    'Hash',
-    'Text',
-    '时间工具',
-    'About',
-  ];
 
-  final List<IconData> _icons = [
-    Icons.security,
-    Icons.link,
-    Icons.code,
-    Icons.data_object,
-    Icons.key,
-    Icons.text_fields,
-    Icons.access_time,
-    Icons.info,
-  ];
 
   @override
   Widget build(BuildContext context) {
