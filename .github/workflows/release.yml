@@ -3,10 +3,14 @@ on:
   push:
     tags:
       - "v*"
+  workflow_run:
+    workflows:
+      - build
+    types:
+      - completed
 
 permissions:
   contents: write
-#  releases: write
 
 jobs:
   release:
