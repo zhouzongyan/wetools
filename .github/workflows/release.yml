@@ -4,11 +4,9 @@ on:
     tags:
       - "v*"
   workflow_run:
-    workflows:
-      - build
+    workflows: ["Build Artifacts"]
     types:
       - completed
-
 permissions:
   contents: write
 
@@ -22,6 +20,33 @@ jobs:
         with:
           path: ./artifacts
 
+      - name: Check if Windows artifact exists
+        id: check_windows_artifact
+        run: |
+          if [ -f ./artifacts/wetools-windows.zip ]; then
+            echo "windows_artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "windows_artifact_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if macOS artifact exists
+        id: check_macos_artifact
+        run: |
+          if [ -f ./artifacts/wetools-macos.zip ]; then
+            echo "macos_artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "macos_artifact_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if Linux artifact exists
+        id: check_linux_artifact
+        run: |
+          if [ -f ./artifacts/wetools-linux.tar.gz ]; then
+            echo "linux_artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "linux_artifact_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -34,7 +59,7 @@ jobs:
           prerelease: false
 
       - name: Upload Release Assets - Windows
-        if: exists('./artifacts/wetools-windows.zip')
+        if: steps.check_windows_artifact.outputs.windows_artifact_exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +70,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Upload Release Assets - macOS
-        if: exists('./artifacts/wetools-macos.zip')
+        if: steps.check_macos_artifact.outputs.macos_artifact_exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,7 +81,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: Upload Release Assets - Linux
-        if: exists('./artifacts/wetools-linux.tar.gz')
+        if: steps.check_linux_artifact.outputs.linux_artifact_exists == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
