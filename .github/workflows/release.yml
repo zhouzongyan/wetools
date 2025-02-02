@@ -53,35 +53,6 @@ jobs:
           flutter config --enable-linux-desktop
           ${{ matrix.build-command }}
 
-      - name: Show directory tree
-        run: |
-          echo "=== PROJECT DIRECTORY TREE ==="
-          case "${{ matrix.os }}" in
-          windows-latest)
-          cmd /c "tree /f /a | more"
-          ;;
-          macos-latest)
-          tree -L 3 -a --dirsfirst
-          ;;
-          ubuntu-latest)
-          tree -L 3 -a --dirsfirst
-          ;;
-          esac
-          
-          echo "=== ARTIFACT DIRECTORY TREE ==="
-          cd "${{ matrix.artifact-path }}"
-          case "${{ matrix.os }}" in
-          windows-latest)
-          cmd /c "tree /f /a | more"
-          ;;
-          macos-latest)
-          tree -L 4 -a --dirsfirst
-          ;;
-          ubuntu-latest)
-          tree -L 4 -a --dirsfirst
-          ;;
-          esac
-        shell: bash
 
   release:
     runs-on: ubuntu-latest
