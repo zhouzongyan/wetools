@@ -1,8 +1,10 @@
 name: Build And Release
 on:
   push:
-    tags:
-      - "v*"
+#    tags:
+#      - "v*"
+    branches:
+      - main
 permissions:
   contents: write
 
@@ -51,16 +53,49 @@ jobs:
           flutter config --enable-linux-desktop
           ${{ matrix.build-command }}
 
+      - name: Show directory tree
+        run: |
+          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
+            echo "=== Project Directory Tree (Windows) ==="
+            tree /f /a"
+          else
+            # Linux/macOS 使用原生 tree
+            if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
+              sudo apt-get install -y tree
+            elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
+              brew install tree
+            fi
+          
+            echo "=== Project Directory Tree ==="
+            tree -L 3 -a --dirsfirst
+          
+            echo "=== Build Artifact Directory Tree ==="
+            cd ${{ matrix.artifact-path }}
+            tree -L 4 -a --dirsfirst
+          fi
+        shell: bash
+
       - name: Create archive
         run: |
           cd ${{ matrix.artifact-path }}
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ../../../${{ matrix.output-name }} .
+            # 使用PowerShell压缩
+            powershell Compress-Archive -Path * -DestinationPath '../../../${{ matrix.output-name }}'
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
             zip -r ../../../${{ matrix.output-name }} .
           else
             tar czf ../../../${{ matrix.output-name }} .
           fi
+        shell: bash
+
+      - name: list all files
+        run: |
+          ls -la ../../../
+        shell: bash
+
+      - name: Check archive file exists
+        run: |
+          ls -la ../../../${{ matrix.output-name }}
         shell: bash
 
       - name: Upload artifact
@@ -71,17 +106,21 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: build    # 等待所有构建 Job 完成
+    needs: build    # 等待所有构建 Job 完成后再执行
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
 
+      # 为了确认下载后的目录结构，调试时可以加上这一步：
+      - name: List artifacts directory
+        run: find ./artifacts
+
       - name: Check if Windows artifact exists
         id: check_windows_artifact
         run: |
-          if [ -f ./artifacts/wetools-windows.zip ]; then
+          if [ -f ./artifacts/wetools-windows.zip/wetools-windows.zip ]; then
             echo "windows_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "windows_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -90,7 +129,7 @@ jobs:
       - name: Check if macOS artifact exists
         id: check_macos_artifact
         run: |
-          if [ -f ./artifacts/wetools-macos.zip ]; then
+          if [ -f ./artifacts/wetools-macos.zip/wetools-macos.zip ]; then
             echo "macos_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "macos_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -99,7 +138,7 @@ jobs:
       - name: Check if Linux artifact exists
         id: check_linux_artifact
         run: |
-          if [ -f ./artifacts/wetools-linux.tar.gz ]; then
+          if [ -f ./artifacts/wetools-linux.tar.gz/wetools-linux.tar.gz ]; then
             echo "linux_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "linux_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -123,7 +162,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/wetools-windows.zip
+          asset_path: ./artifacts/wetools-windows.zip/wetools-windows.zip
           asset_name: wetools-windows.zip
           asset_content_type: application/zip
 
@@ -134,7 +173,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/wetools-macos.zip
+          asset_path: ./artifacts/wetools-macos.zip/wetools-macos.zip
           asset_name: wetools-macos.zip
           asset_content_type: application/zip
 
@@ -145,6 +184,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/wetools-linux.tar.gz
+          asset_path: ./artifacts/wetools-linux.tar.gz/wetools-linux.tar.gz
           asset_name: wetools-linux.tar.gz
           asset_content_type: application/gzip
