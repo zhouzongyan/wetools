@@ -1,10 +1,10 @@
 name: Build And Release
 on:
   push:
-    #    tags:
-    #      - "v*"
-    branches:
-      - main
+      tags:
+        - "v*"
+#    branches:
+#      - main
 permissions:
   contents: write
 
@@ -71,27 +71,11 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: Check if Windows artifact exists
-        id: check_windows_artifact
+      - name: Check  artifact exists
+        if: matrix.os == 'ubuntu-latest'
+        id: check_artifact
         run: |
-          if [ -f ./artifacts/windows/wetools-windows.zip ]; then
-            echo "windows_artifact_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "windows_artifact_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check if macOS artifact exists
-        id: check_macos_artifact
-        run: |
-          if [ -f ./artifacts/macos/wetools-macos.zip ]; then
-            echo "macos_artifact_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "macos_artifact_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check if Linux artifact exists
-        id: check_linux_artifact
-        run: |
+          apt install -y tree && tree ./artifacts/
           if [ -f ./artifacts/linux/wetools-linux.tar.gz ]; then
             echo "linux_artifact_exists=true" >> $GITHUB_OUTPUT
           else
