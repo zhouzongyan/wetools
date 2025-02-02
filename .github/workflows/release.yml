@@ -19,14 +19,17 @@ jobs:
             output-name: wetools-windows.zip
             build-command: flutter build windows
             artifact-path: build/windows/x64/runner/Release
+            platform: windows
           - os: macos-latest
             output-name: wetools-macos.zip
             build-command: flutter build macos
             artifact-path: build/macos/Build/Products/Release/wetools.app
+            platform: macos
           - os: ubuntu-latest
             output-name: wetools-linux.tar.gz
             build-command: flutter build linux
             artifact-path: build/linux/x64/release/bundle
+            platform: linux
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -53,6 +56,11 @@ jobs:
           flutter config --enable-linux-desktop
           ${{ matrix.build-command }}
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: ${{ matrix.artifact-path }}
 
   release:
     runs-on: ubuntu-latest
@@ -63,14 +71,10 @@ jobs:
         with:
           path: ./artifacts
 
-      # 为了确认下载后的目录结构，调试时可以加上这一步：
-      - name: List artifacts directory
-        run: find ./artifacts
-
       - name: Check if Windows artifact exists
         id: check_windows_artifact
         run: |
-          if [ -f ./artifacts/wetools-windows.zip/wetools-windows.zip ]; then
+          if [ -f ./artifacts/windows/wetools-windows.zip ]; then
             echo "windows_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "windows_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -79,7 +83,7 @@ jobs:
       - name: Check if macOS artifact exists
         id: check_macos_artifact
         run: |
-          if [ -f ./artifacts/wetools-macos.zip/wetools-macos.zip ]; then
+          if [ -f ./artifacts/macos/wetools-macos.zip ]; then
             echo "macos_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "macos_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -88,7 +92,7 @@ jobs:
       - name: Check if Linux artifact exists
         id: check_linux_artifact
         run: |
-          if [ -f ./artifacts/wetools-linux.tar.gz/wetools-linux.tar.gz ]; then
+          if [ -f ./artifacts/linux/wetools-linux.tar.gz ]; then
             echo "linux_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "linux_artifact_exists=false" >> $GITHUB_OUTPUT
