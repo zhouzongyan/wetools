@@ -1,8 +1,8 @@
 name: Build And Release
 on:
   push:
-#    tags:
-#      - "v*"
+    #    tags:
+    #      - "v*"
     branches:
       - main
 permissions:
@@ -55,24 +55,32 @@ jobs:
 
       - name: Show directory tree
         run: |
-          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-            echo "=== Windows Directory Tree ==="
-            tree /f /a
-            echo "=== Build Artifact Tree ==="
-            cd "${{ matrix.artifact-path }}"
-            tree /f /a
-          else
-            if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
-              sudo apt-get install -y tree
-            elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-              brew install tree
-            fi
-            echo "=== Project Directory Tree ==="
-            tree -L 3 -a --dirsfirst
-            echo "=== Build Artifact Tree ==="
-            cd "${{ matrix.artifact-path }}"
-            tree -L 4 -a --dirsfirst
-          fi
+          echo "=== PROJECT DIRECTORY TREE ==="
+          case "${{ matrix.os }}" in
+          windows-latest)
+          cmd /c "tree /f /a | more"
+          ;;
+          macos-latest)
+          tree -L 3 -a --dirsfirst
+          ;;
+          ubuntu-latest)
+          tree -L 3 -a --dirsfirst
+          ;;
+          esac
+          
+          echo "=== ARTIFACT DIRECTORY TREE ==="
+          cd "${{ matrix.artifact-path }}"
+          case "${{ matrix.os }}" in
+          windows-latest)
+          cmd /c "tree /f /a | more"
+          ;;
+          macos-latest)
+          tree -L 4 -a --dirsfirst
+          ;;
+          ubuntu-latest)
+          tree -L 4 -a --dirsfirst
+          ;;
+          esac
         shell: bash
 
   release:
