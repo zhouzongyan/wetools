@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 void generateIcon() {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
-  final size = Size(1024, 1024);
+  const size = Size(1024, 1024);
 
   final paint = Paint()
     ..color = Colors.deepPurple

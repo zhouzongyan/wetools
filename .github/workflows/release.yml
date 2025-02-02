@@ -56,28 +56,6 @@ jobs:
       - name: Show directory tree
         run: |
           if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-            echo "=== Project Directory Tree (Windows) ==="
-            tree /f /a"
-          else
-            # Linux/macOS 使用原生 tree
-            if [[ "${{ matrix.os }}" == 'ubuntu-latest' ]]; then
-              sudo apt-get install -y tree
-            elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-              brew install tree
-            fi
-          
-            echo "=== Project Directory Tree ==="
-            tree -L 3 -a --dirsfirst
-          
-            echo "=== Build Artifact Directory Tree ==="
-            cd ${{ matrix.artifact-path }}
-            tree -L 4 -a --dirsfirst
-          fi
-        shell: bash
-
-      - name: Show directory tree
-        run: |
-          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
             echo "=== Windows Directory Tree ==="
             tree /f /a
             echo "=== Build Artifact Tree ==="
