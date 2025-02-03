@@ -72,6 +72,9 @@ jobs:
         with:
           path: ./artifacts
 
+      - name: show workspace
+        run: tree -L 3 -a --dirsfirst
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -82,6 +85,16 @@ jobs:
           release_name: "Release ${{ github.ref_name }}"
           draft: false
           prerelease: false
+
+      - name: Upload Release Assets - Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/linux/wetools-linux.tar.gz
+          asset_name: wetools-linux.tar.gz
+          asset_content_type: application/gzip
 
       - name: Upload Release Assets - Windows
         uses: actions/upload-release-asset@v1
@@ -103,12 +116,3 @@ jobs:
           asset_name: wetools-macos.zip
           asset_content_type: application/zip
 
-      - name: Upload Release Assets - Linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/linux/wetools-linux.tar.gz
-          asset_name: wetools-linux.tar.gz
-          asset_content_type: application/gzip
