@@ -56,12 +56,38 @@ jobs:
           flutter config --enable-macos-desktop
           flutter config --enable-linux-desktop
           ${{ matrix.build-command }}
+      # 添加平台对应的打包步骤
+      - name: Package Artifact for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          # 打包为 zip 文件
+          cd ${{ matrix.artifact-path }}
+          zip -r ../../wetools-windows.zip .
+          cd ../../
+        # 打包后生成的文件路径：./wetools-windows.zip
 
+      - name: Package Artifact for macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          # macOS 下可以用 ditto 命令打包为 zip 文件
+          ditto -c -k --sequesterRsrc --keepParent "${{ matrix.artifact-path }}" wetools-macos.zip
+
+      - name: Package Artifact for Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          # 打包为 tar.gz 文件
+          tar -czvf wetools-linux.tar.gz -C "${{ matrix.artifact-path }}" .
+
+      # 上传打包后的 Artifact（这里示例上传，后续 Release Job 中可再下载 Artifact 后上传 Release）
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform }}
-          path: ${{ matrix.artifact-path }}
+          path: |
+            ${{ matrix.os == 'windows-latest' && 'wetools-windows.zip' || '' }}
+            ${{ matrix.os == 'macos-latest' && 'wetools-macos.zip' || '' }}
+            ${{ matrix.os == 'ubuntu-latest' && 'wetools-linux.tar.gz' || '' }}
+
 
   release:
     runs-on: ubuntu-latest
