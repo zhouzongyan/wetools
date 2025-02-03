@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
+import 'utils/clipboard_util.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: ClipboardUtil.rootScaffoldMessengerKey,
       title: 'WeTools',
       theme: ThemeData(
         // This is the theme of your application.

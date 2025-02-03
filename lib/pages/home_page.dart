@@ -6,6 +6,7 @@ import 'package:wetools/pages/jwt_page.dart';
 import 'package:wetools/pages/text_page.dart';
 import 'package:wetools/pages/url_page.dart';
 import 'about_page.dart';
+import 'image_page.dart';
 import 'time_page.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -33,6 +34,10 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.code),
       label: Text('Base64'),
     ),
+    // NavigationRailDestination(
+    //   icon: Icon(Icons.image),
+    //   label: Text('Image'),
+    // ),
     NavigationRailDestination(
       icon: Icon(Icons.data_object),
       label: Text('JSON'),
@@ -59,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     JwtPage(),
     UrlPage(),
     Base64Page(),
+    // ImagePage(),
     JsonPage(),
     HashPage(),
     TextPage(),

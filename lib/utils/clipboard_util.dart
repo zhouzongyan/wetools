@@ -2,6 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ClipboardUtil {
+  static final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
+  static void showSnackBar(
+    String message, {
+    Duration? duration,
+    SnackBarAction? action,
+    SnackBarBehavior? behavior,
+    Color? backgroundColor,
+    EdgeInsets? margin,
+  }) {
+    rootScaffoldMessengerKey.currentState?.clearSnackBars();
+    rootScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            message,
+            style: const TextStyle(height: 1.5),
+          ),
+        ),
+        duration: duration ?? const Duration(seconds: 2),
+        action: action,
+        behavior: behavior ?? SnackBarBehavior.floating,
+        backgroundColor: backgroundColor,
+        margin: margin ?? const EdgeInsets.all(8),
+      ),
+    );
+  }
+
   static void copyToClipboard(String text, BuildContext context) {
     // 使用 async 方式复制，避免键盘事件冲突
     Future<void> copy() async {
@@ -9,31 +39,20 @@ class ClipboardUtil {
     }
 
     copy().then((_) {
-      if (context.mounted) {
-        // 添加 mounted 检查
-        // 移除任何已经显示的 SnackBar
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-
-        // 显示新的 SnackBar，并设置其位置和行为
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('已复制到剪贴板'),
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 50,
-              right: 500,
-              left: 500,
-            ),
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: '关闭',
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              },
-            ),
-          ),
-        );
-      }
+      showSnackBar(
+        '已复制到剪贴板',
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 80,
+          right: 200,
+          left: 200,
+        ),
+        action: SnackBarAction(
+          label: '关闭',
+          onPressed: () {
+            rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+          },
+        ),
+      );
     });
   }
 }
