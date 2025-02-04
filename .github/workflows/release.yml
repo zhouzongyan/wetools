@@ -18,17 +18,17 @@ jobs:
         include:
           - os: windows-latest
             output-name: wetools-windows.zip
-            build-command: flutter build windows
+            build-command: flutter build windows --release --split-debug-info=symbols --tree-shake-icons --target-platform windows-x64 --dart-define=Dart_DEBUG=false --no-null-assertions
             artifact-path: build/windows/x64/runner/Release
             platform: windows
           - os: macos-latest
             output-name: wetools-macos.zip
-            build-command: flutter build macos
+            build-command: flutter build macos --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-pub
             artifact-path: build/macos/Build/Products/Release/wetools.app
             platform: macos
           - os: ubuntu-latest
             output-name: wetools-linux.tar.gz
-            build-command: flutter build linux
+            build-command: flutter build linux --release --split-debug-info=symbols --tree-shake-icons --target-platform linux-x64 --no-null-assertions
             artifact-path: build/linux/x64/release/bundle
             platform: linux
     steps:

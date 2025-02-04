@@ -8,6 +8,8 @@ import 'package:wetools/pages/url_page.dart';
 import 'about_page.dart';
 import 'image_page.dart';
 import 'time_page.dart';
+import 'translate_page.dart';
+import 'system_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -55,6 +57,14 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('Time'),
     ),
     NavigationRailDestination(
+      icon: Icon(Icons.translate),
+      label: Text('Translate'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.computer),
+      label: Text('System'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.info_outline),
       label: Text('About'),
     ),
@@ -69,10 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
     HashPage(),
     TextPage(),
     TimePage(),
+    TranslatePage(),
+    SystemPage(),
     AboutPage(),
   ];
-
-
 
   @override
   Widget build(BuildContext context) {

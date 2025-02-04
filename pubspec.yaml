@@ -41,6 +41,8 @@ dependencies:
   pasteboard: ^0.2.0
   qr_flutter: ^4.1.0
   uuid: ^4.3.3
+  translator: ^0.1.7
+  system_info2: ^4.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -100,19 +102,13 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
-  fonts:  
+  fonts:
     - family: SourceHanSansSC
       fonts:
         - asset: assets/fonts/SourceHanSansSC-Regular.otf
-        - asset: assets/fonts/SourceHanSansSC-Medium.otf
-          weight: 500
-        - asset: assets/fonts/SourceHanSansSC-Bold.otf
-          weight: 700
     - family: JetBrainsMono   
       fonts:
         - asset: assets/fonts/JetBrainsMono-Regular.ttf
-        - asset: assets/fonts/JetBrainsMono-Bold.ttf
-          weight: 700
 
   assets:
     - assets/images/wechat_pay.png
