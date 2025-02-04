@@ -147,29 +147,27 @@ GBK字节数: $gbkBytes''';
 
       // 生成图片
       final qrImage = await qrPainter.toImage(400);
-      if (qrImage != null) {
-        final byteData =
-            await qrImage.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          setState(() {
-            _qrImage = byteData.buffer.asUint8List();
-          });
+      final byteData =
+          await qrImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        setState(() {
+          _qrImage = byteData.buffer.asUint8List();
+        });
 
-          if (context.mounted) {
-            ClipboardUtil.rootScaffoldMessengerKey.currentState
-                ?.hideCurrentSnackBar();
-            ClipboardUtil.showSnackBar(
-              '二维码生成完成',
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 80,
-                right: 200,
-                left: 200,
-              ),
-            );
-          }
+        if (context.mounted) {
+          ClipboardUtil.rootScaffoldMessengerKey.currentState
+              ?.hideCurrentSnackBar();
+          ClipboardUtil.showSnackBar(
+            '二维码生成完成',
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height - 80,
+              right: 200,
+              left: 200,
+            ),
+          );
         }
       }
-    } catch (e) {
+        } catch (e) {
       if (context.mounted) {
         ClipboardUtil.showSnackBar(
           '生成二维码失败',

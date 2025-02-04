@@ -6,7 +6,6 @@ import 'package:wetools/pages/jwt_page.dart';
 import 'package:wetools/pages/text_page.dart';
 import 'package:wetools/pages/url_page.dart';
 import 'about_page.dart';
-import 'image_page.dart';
 import 'time_page.dart';
 import 'translate_page.dart';
 import 'system_page.dart';
