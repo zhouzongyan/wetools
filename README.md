@@ -5,21 +5,9 @@
 
 一个使用 Flutter 开发的轻量级开发者工具箱，提供常用的编码解码、格式化、加密等功能。
 
-![alt text](./assets/images/长截图_20250131_212816.png)
-![alt text](./assets/images/长截图_20250131_212236.png)
-![alt text](./assets/images/wetools.exe_20250131_212044.png)
-![alt text](./assets/images/长截图_20250131_212358.png)
-![alt text](./assets/images/wetools.exe_20250131_212517.png)
-![alt text](./assets/images/wetools.exe_20250131_212601.png)
-![alt text](./assets/images/wetools.exe_20250131_212700.png)
-![alt text](./assets/images/长截图_20250131_212733.png)
-
-
-![alt text](./assets/gif/录屏_20250128_232717.gif)
-![alt text](./assets/gif/录屏_20250128_233004.gif)
-
 ## 最近更新
 
+- 增加异常日志记录, 方便排查问题
 - 新增 HTTP 工具，支持 GET 和 POST 请求
 - 新增系统信息页面，展示系统信息和网络信息
 - 优化内存占用及打包体积
@@ -33,7 +21,7 @@
 - 统一界面风格，采用 Material Design 3
 - 完善多平台支持（Windows/macOS/Linux/Web）
 
-## 功能特性
+## 功能特性(持续更新中,请以实际为准)
 
 - **JWT 工具**
   - JWT Token 编码/解码
@@ -80,7 +68,13 @@
 - Dart 3.0.0 或更高版本
 
 ### 安装
+在 release 中下载对应平台的压缩包, 解压后即可运行.
 
+注意: macos 如果打开提示恶意软件,是由于没有签名导致.
+
+ 1.右键点击应用 打开 
+
+ 2.在系统偏好设置 ->安全性与隐私 中允许打开
 
 ## 平台支持
 
@@ -102,5 +96,21 @@
 - Dart 3.0.0
 - Material Design 3
 - Flutter Web
+
+
+![alt text](./assets/images/长截图_20250131_212816.png)
+![alt text](./assets/images/长截图_20250131_212236.png)
+![alt text](./assets/images/wetools.exe_20250131_212044.png)
+![alt text](./assets/images/长截图_20250131_212358.png)
+![alt text](./assets/images/wetools.exe_20250131_212517.png)
+![alt text](./assets/images/wetools.exe_20250131_212601.png)
+![alt text](./assets/images/wetools.exe_20250131_212700.png)
+![alt text](./assets/images/长截图_20250131_212733.png)
+
+
+![alt text](./assets/gif/录屏_20250128_232717.gif)
+![alt text](./assets/gif/录屏_20250128_233004.gif)
+
+
 
 
