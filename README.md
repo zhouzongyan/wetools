@@ -111,6 +111,14 @@
 ![alt text](./assets/gif/录屏_20250128_232717.gif)
 ![alt text](./assets/gif/录屏_20250128_233004.gif)
 
+## macOS 使用说明
+
+由于应用未经过 Apple 签名，首次运行时可能会提示"无法打开"，解决方法：
+
+1. 在 Finder 中找到应用，右键点击 -> 打开
+2. 在系统偏好设置 -> 安全性与隐私 中允许打开
+3. 或使用终端命令：`xattr -cr /Applications/wetools.app`
+
 
 
 
