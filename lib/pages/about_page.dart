@@ -52,13 +52,15 @@ class AboutPage extends StatelessWidget {
       这是一个简单的开发者工具集合，包含了常用的编码解码、格式化等功能。
       
       主要功能：
-      • Base64 编码解码
-      • URL 编码解码
-      • JSON 格式化
-      • 时间戳转换
-      • Hash 计算（MD5/SHA1/SHA256/SM3）
-      • JWT 解析
-      • 文本处理工具
+        • Base64 编码解码
+        • URL 编码解码
+        • JSON 格式化
+        • 时间戳转换
+        • Hash 计算（MD5/SHA1/SHA256/SM3）
+        • JWT 解析
+        • 文本处理工具
+        • 翻译工具
+        • 系统信息
       
       
       '''),

@@ -1,9 +1,44 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'pages/home_page.dart';
 import 'utils/clipboard_util.dart';
+import 'utils/logger_util.dart';
 
 void main() {
-  runApp(const MyApp());
+  // 先设置 debugZoneErrorsAreFatal
+  BindingBase.debugZoneErrorsAreFatal = true;
+
+  runZonedGuarded(() async {
+    // 在 Zone 内部初始化绑定
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // 初始化日志系统
+    await LoggerUtil.init();
+
+    // 捕获 Flutter 框架异常
+    FlutterError.onError = (FlutterErrorDetails details) async {
+      await LoggerUtil.error(
+        '未捕获的Flutter异常',
+        details.exception,
+        details.stack,
+      );
+      if (kDebugMode) {
+        FlutterError.dumpErrorToConsole(details);
+      }
+    };
+
+    // 捕获异步异常
+    PlatformDispatcher.instance.onError = (error, stack) {
+      LoggerUtil.error('未捕获的异步异常', error, stack);
+      return true;
+    };
+
+    runApp(const MyApp());
+    LoggerUtil.info('应用启动');
+  }, (error, stackTrace) async {
+    await LoggerUtil.error('未捕获的Zone异常', error, stackTrace);
+  });
 }
 
 class MyApp extends StatelessWidget {

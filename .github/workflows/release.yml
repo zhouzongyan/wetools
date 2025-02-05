@@ -85,6 +85,22 @@ jobs:
             ${{ matrix.os == 'macos-latest' && 'wetools-macos.zip' || '' }}
             ${{ matrix.os == 'ubuntu-latest' && 'wetools-linux.tar.gz' || '' }}
 
+      - name: Import Certificate
+        if: matrix.os == 'macos-latest'
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+
+      - name: Sign and Notarize
+        if: matrix.os == 'macos-latest'
+        run: |
+          # 签名应用
+          codesign --force --deep --sign "${{ secrets.APPLE_DEVELOPER_IDENTITY }}" "${{ matrix.artifact-path }}"
+          # 打包
+          ditto -c -k --sequesterRsrc --keepParent "${{ matrix.artifact-path }}" wetools-macos.zip
+          # 公证
+          xcrun notarytool submit wetools-macos.zip --apple-id "${{ secrets.APPLE_ID }}" --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" --wait
 
   release:
     runs-on: ubuntu-latest
