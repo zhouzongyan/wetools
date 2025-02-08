@@ -19,6 +19,8 @@ class _HttpPageState extends State<HttpPage> {
   String _response = '';
   String _method = 'GET';
   bool _isLoading = false;
+  bool _showPreview = false;
+  String _contentType = '';
 
   Future<void> _sendRequest() async {
     if (_urlController.text.isEmpty) {
@@ -57,6 +59,9 @@ class _HttpPageState extends State<HttpPage> {
         );
       }
 
+      // 获取响应的 Content-Type
+      _contentType = response.headers['content-type'] ?? '';
+      
       setState(() {
         _response = '''状态码: ${response.statusCode}
         
@@ -82,12 +87,24 @@ ${_formatResponse(response.body)}''';
 
   String _formatResponse(String body) {
     try {
-      const JsonEncoder encoder = JsonEncoder.withIndent('  ');
-      final object = json.decode(body);
-      return encoder.convert(object);
+      if (_contentType.contains('json')) {
+        const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+        final object = json.decode(body);
+        return encoder.convert(object);
+      }
+      return body;
     } catch (e) {
       return body;
     }
+  }
+
+  String _getResponseBody() {
+    final lines = _response.split('\n');
+    final bodyIndex = lines.indexOf('响应体:');
+    if (bodyIndex != -1 && bodyIndex < lines.length - 1) {
+      return lines.sublist(bodyIndex + 1).join('\n');
+    }
+    return '';
   }
 
   Future<void> _saveToFile(String content, {String? prefix}) async {
@@ -142,6 +159,15 @@ ${_formatResponse(response.body)}''';
         );
       }
     }
+  }
+
+  void _clearAll() {
+    setState(() {
+      _urlController.clear();
+      _headersController.clear();
+      _bodyController.clear();
+      _response = '';
+    });
   }
 
   @override
@@ -227,6 +253,11 @@ ${_formatResponse(response.body)}''';
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        OutlinedButton(
+                          onPressed: _clearAll,
+                          child: const Text('清除'),
+                        ),
+                        const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: _isLoading ? null : _sendRequest,
                           child: _isLoading
@@ -252,14 +283,14 @@ ${_formatResponse(response.body)}''';
                           const Spacer(),
                           IconButton(
                             icon: const Icon(Icons.save_alt, size: 20),
-                            onPressed: () => _saveToFile(_response),
-                            tooltip: '保存为文件',
+                            onPressed: () => _saveToFile(_getResponseBody()),
+                            tooltip: '保存响应体',
                           ),
                           IconButton(
                             icon: const Icon(Icons.copy, size: 20),
-                            onPressed: () => ClipboardUtil.copyToClipboard(
-                                _response, context),
-                            tooltip: '复制响应',
+                            onPressed: () =>
+                                ClipboardUtil.copyToClipboard(_getResponseBody(), context),
+                            tooltip: '复制响应体',
                           ),
                         ],
                       ),

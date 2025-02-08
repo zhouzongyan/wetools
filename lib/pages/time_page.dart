@@ -85,6 +85,39 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
     }
   }
 
+  Future<void> _selectDateTime() async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1970),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null && context.mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        final DateTime combinedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+
+        setState(() {
+          _inputController.text = combinedDateTime.toString();
+        });
+        
+        // 自动触发转换
+        _convertTime();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -151,29 +184,46 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
-            CustomTextField(
-              controller: _inputController,
-              hintText: '输入时间戳或日期时间（如：2024-01-01 12:00:00）',
-              maxLines: 1,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _convertTime(),
-            ),
-            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ElevatedButton(
-                  onPressed: _convertTime,
-                  child: const Text('转换'),
+                Expanded(
+                  flex: 6,
+                  child: CustomTextField(
+                    controller: _inputController,
+                    hintText: '输入时间戳或日期时间（如：2024-01-01 12:00:00）',
+                    maxLines: 5,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _convertTime(),
+                  ),
                 ),
-                OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _inputController.clear();
-                      _result = '';
-                    });
-                  },
-                  child: const Text('清除'),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _convertTime,
+                        child: const Text('转换'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _selectDateTime,
+                        child: const Text('选择时间'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _inputController.clear();
+                            _result = '';
+                          });
+                        },
+                        child: const Text('清除'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
