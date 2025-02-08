@@ -267,6 +267,61 @@ GBK字节数: $gbkBytes''';
     });
   }
 
+  Future<void> _saveToFile(String content, {String? prefix}) async {
+    try {
+      final now = DateTime.now();
+      final fileName = '${prefix ?? 'text'}_${now.millisecondsSinceEpoch}.txt';
+
+      String? savePath;
+
+      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        final directory = await getDownloadsDirectory();
+        if (directory != null) {
+          savePath = '${directory.path}${Platform.pathSeparator}$fileName';
+        }
+      }
+
+      if (savePath == null) {
+        final directory = await getApplicationDocumentsDirectory();
+        savePath = '${directory.path}${Platform.pathSeparator}$fileName';
+      }
+
+      final file = File(savePath);
+      await file.writeAsString(content);
+
+      if (context.mounted) {
+        ClipboardUtil.showSnackBar(
+          '文件保存成功！\n保存路径: $savePath',
+          duration: const Duration(seconds: 5),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 80,
+            right: 200,
+            left: 200,
+          ),
+          action: SnackBarAction(
+            label: '知道了',
+            onPressed: () {
+              ClipboardUtil.rootScaffoldMessengerKey.currentState
+                  ?.hideCurrentSnackBar();
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ClipboardUtil.showSnackBar(
+          '保存文件失败，请重试',
+          backgroundColor: Colors.red,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 80,
+            right: 200,
+            left: 200,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -358,6 +413,11 @@ GBK字节数: $gbkBytes''';
                                   child: const Text('生成UUID'),
                                 ),
                                 const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: () => _saveToFile(_inputController.text, prefix: 'input'),
+                                  child: const Text('保存为文件'),
+                                ),
+                                const SizedBox(height: 8),
                                 OutlinedButton(
                                   onPressed: () {
                                     setState(() {
@@ -395,15 +455,16 @@ GBK字节数: $gbkBytes''';
                           children: [
                             Row(
                               children: [
-                                const Text('结果:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                const Text('结果:', style: TextStyle(fontWeight: FontWeight.bold)),
                                 const Spacer(),
                                 IconButton(
+                                  icon: const Icon(Icons.save_alt, size: 20),
+                                  onPressed: () => _saveToFile(_result, prefix: 'result'),
+                                  tooltip: '保存为文件',
+                                ),
+                                IconButton(
                                   icon: const Icon(Icons.copy, size: 20),
-                                  onPressed: () =>
-                                      ClipboardUtil.copyToClipboard(
-                                          _result, context),
+                                  onPressed: () => ClipboardUtil.copyToClipboard(_result, context),
                                   tooltip: '复制结果',
                                 ),
                               ],

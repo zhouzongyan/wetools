@@ -114,6 +114,16 @@ class AboutPage extends StatelessWidget {
                             decoration: TextDecoration.underline,
                           ),
                         ),
+                      ),TextButton(
+                        onPressed: () =>
+                            _launchUrl('https://caoayu.top'),
+                        child: const Text(
+                          '作者博客:',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       const Text(
