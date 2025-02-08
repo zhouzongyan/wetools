@@ -10,6 +10,7 @@ import 'time_page.dart';
 import 'translate_page.dart';
 import 'system_page.dart';
 import 'http_page.dart';
+import 'tcp_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -65,6 +66,10 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('HTTP'),
     ),
     NavigationRailDestination(
+      icon: Icon(Icons.lan),
+      label: Text('TCP'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.computer),
       label: Text('System'),
     ),
@@ -85,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
     TimePage(),
     TranslatePage(),
     HttpPage(),
+    TcpPage(),
     SystemPage(),
     AboutPage(),
   ];
