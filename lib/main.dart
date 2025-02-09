@@ -141,8 +141,8 @@ class MyApp extends StatelessWidget {
                   color: Color(0xFFBBBBBB),
                 ),
               ),
-              scaffoldBackgroundColor: Color(0xFF121212),
-              cardColor: Color(0xFF1E1E1E),
+              scaffoldBackgroundColor: const Color(0xFF121212),
+              cardColor: const Color(0xFF1E1E1E),
               inputDecorationTheme: InputDecorationTheme(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),

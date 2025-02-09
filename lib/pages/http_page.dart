@@ -19,7 +19,7 @@ class _HttpPageState extends State<HttpPage> {
   String _response = '';
   String _method = 'GET';
   bool _isLoading = false;
-  bool _showPreview = false;
+  final bool _showPreview = false;
   String _contentType = '';
 
   Future<void> _sendRequest() async {
