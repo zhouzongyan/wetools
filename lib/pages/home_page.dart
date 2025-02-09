@@ -118,6 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   minWidth: 85, // 设置最小宽度，避免文字换行
                   useIndicator: true, // 使用指示器
                   groupAlignment: -1, // 将项目对齐到顶部
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 ),
               ),
             ),

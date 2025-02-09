@@ -25,51 +25,8 @@ class AboutPage extends StatelessWidget {
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.deepPurple.withOpacity(0.1),
-                      Colors.deepPurple.withOpacity(0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '关于本工具',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('''
-      这是一个简单的开发者工具集合，包含了常用的编码解码、格式化等功能。
-      
-      主要功能：
-        • Base64 编码解码
-        • URL 编码解码
-        • JSON 格式化
-        • 时间戳转换
-        • Hash 计算（MD5/SHA1/SHA256/SM3）
-        • JWT 解析
-        • 文本处理工具
-        • 翻译工具
-        • 系统信息
-      
-      
-      '''),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
               Card(
-                color: Colors.grey.shade100,
+                color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(

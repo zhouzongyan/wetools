@@ -344,6 +344,7 @@ GBK字节数: $gbkBytes''';
             const SizedBox(height: 20),
             Card(
               elevation: 2,
+              color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

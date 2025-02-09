@@ -50,22 +50,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       scaffoldMessengerKey: ClipboardUtil.rootScaffoldMessengerKey,
       title: 'WeTools',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
+      themeMode: ThemeMode.system,  // 跟随系统主题
+      theme: ThemeData(  // 亮色主题
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.light,
@@ -92,6 +78,56 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF666666),
           ),
         ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+          ),
+          contentPadding: const EdgeInsets.all(16),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        cardColor: Colors.white,
+      ),
+      darkTheme: ThemeData(  // 暗色主题
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        fontFamily: 'SourceHanSansSC',
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFEEEEEE),
+          ),
+          titleLarge: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFDDDDDD),
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            color: Color(0xFFBBBBBB),
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: Color(0xFFBBBBBB),
+          ),
+        ),
+        scaffoldBackgroundColor: Color(0xFF121212),
+        cardColor: Color(0xFF1E1E1E),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
