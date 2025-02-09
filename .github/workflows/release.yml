@@ -31,11 +31,11 @@ jobs:
             build-command: flutter build linux --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
             artifact-path: build/linux/x64/release/bundle
             platform: linux
-          - os: ubuntu-latest
-            output-name: wetools-android.apk
-            build-command: flutter build apk --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
-            artifact-path: build/app/outputs/flutter-apk/app-release.apk
-            platform: android
+#          - os: ubuntu-latest
+#            output-name: wetools-android.apk
+#            build-command: flutter build apk --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
+#            artifact-path: build/app/outputs/flutter-apk/app-release.apk
+#            platform: android
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -60,14 +60,14 @@ jobs:
         uses: android-actions/setup-android@v3
 
       # 配置 Android 签名
-      - name: Setup Android Signing
-        if: matrix.platform == 'android'
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-          echo "storeFile=keystore.jks" >> android/key.properties
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+#      - name: Setup Android Signing
+#        if: matrix.platform == 'android'
+#        run: |
+#          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+#          echo "storeFile=keystore.jks" >> android/key.properties
+#          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+#          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+#          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -105,10 +105,10 @@ jobs:
           tar -czvf wetools-linux.tar.gz -C "${{ matrix.artifact-path }}" .
 
       # 添加 Android APK 复制步骤
-      - name: Copy Android APK
-        if: matrix.platform == 'android'
-        run: |
-          cp "${{ matrix.artifact-path }}" wetools-android.apk
+#      - name: Copy Android APK
+#        if: matrix.platform == 'android'
+#        run: |
+#          cp "${{ matrix.artifact-path }}" wetools-android.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -118,7 +118,7 @@ jobs:
             ${{ matrix.os == 'windows-latest' && 'wetools-windows.zip' || '' }}
             ${{ matrix.os == 'macos-latest' && 'wetools-macos.zip' || '' }}
             ${{ (matrix.os == 'ubuntu-latest' && matrix.platform == 'linux') && 'wetools-linux.tar.gz' || '' }}
-            ${{ matrix.platform == 'android' && 'wetools-android.apk' || '' }}
+#            ${{ matrix.platform == 'android' && 'wetools-android.apk' || '' }}
 
       # 注释掉或删除这些步骤
       # - name: Import Certificate
@@ -189,13 +189,13 @@ jobs:
           asset_content_type: application/zip
 
       # 添加 Android APK 上传步骤
-      - name: Upload Release Assets - Android
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/android/wetools-android.apk
-          asset_name: wetools-android.apk
-          asset_content_type: application/vnd.android.package-archive
+#      - name: Upload Release Assets - Android
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: ./artifacts/android/wetools-android.apk
+#          asset_name: wetools-android.apk
+#          asset_content_type: application/vnd.android.package-archive
 
