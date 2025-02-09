@@ -11,6 +11,7 @@ import 'translate_page.dart';
 import 'system_page.dart';
 import 'http_page.dart';
 import 'tcp_page.dart';
+import 'settings_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -77,6 +78,10 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.info_outline),
       label: Text('About'),
     ),
+    NavigationRailDestination(
+      icon: Icon(Icons.settings),
+      label: Text('Settings'),
+    ),
   ];
 
   final List<Widget> _pages = const [
@@ -93,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
     TcpPage(),
     SystemPage(),
     AboutPage(),
+    SettingsPage(),
   ];
 
   @override
