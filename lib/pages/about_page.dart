@@ -75,7 +75,7 @@ class AboutPage extends StatelessWidget {
                         onPressed: () =>
                             _launchUrl('https://caoayu.top'),
                         child: const Text(
-                          '作者博客:',
+                          '作者博客',
                           style: TextStyle(
                             color: Colors.blue,
                             decoration: TextDecoration.underline,
