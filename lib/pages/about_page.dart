@@ -26,7 +26,7 @@ class AboutPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Card(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
