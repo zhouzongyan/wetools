@@ -12,6 +12,7 @@ import 'system_page.dart';
 import 'http_page.dart';
 import 'tcp_page.dart';
 import 'settings_page.dart';
+import 'ip_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -75,6 +76,10 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('System'),
     ),
     NavigationRailDestination(
+      icon: Icon(Icons.public),
+      label: Text('IP'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.info_outline),
       label: Text('About'),
     ),
@@ -97,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
     HttpPage(),
     TcpPage(),
     SystemPage(),
+    IpPage(),
     AboutPage(),
     SettingsPage(),
   ];
