@@ -205,7 +205,7 @@ $_chinaIpInfo''',
             if (isLoading)
               const Center(child: CircularProgressIndicator())
             else
-              SelectableText(
+              Text(
                 content.isEmpty ? '无数据' : content,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

@@ -90,7 +90,7 @@ class _JwtPageState extends State<JwtPage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 4),
-            const SelectableText(
+            const Text(
               'JSON Web Token 编码解码工具，支持签名验证',
               style: TextStyle(color: Colors.grey),
             ),
