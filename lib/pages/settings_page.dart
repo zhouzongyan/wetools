@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../utils/theme_util.dart';
 import '../services/update_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../services/proxy_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -14,17 +15,44 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _currentVersion = '';
   bool _checkingUpdate = false;
+  bool _useSystemProxy = true;
+  String? _proxyHost;
+  int? _proxyPort;
+  final _proxyHostController = TextEditingController();
+  final _proxyPortController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _loadProxySettings();
+  }
+
+  @override
+  void dispose() {
+    _proxyHostController.dispose();
+    _proxyPortController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       _currentVersion = packageInfo.version;
+    });
+  }
+
+  Future<void> _loadProxySettings() async {
+    final useSystemProxy = await ProxyService.getUseSystemProxy();
+    final proxyHost = await ProxyService.getProxyHost();
+    final proxyPort = await ProxyService.getProxyPort();
+    
+    setState(() {
+      _useSystemProxy = useSystemProxy;
+      _proxyHost = proxyHost;
+      _proxyPort = proxyPort;
+      _proxyHostController.text = proxyHost ?? '';
+      _proxyPortController.text = proxyPort?.toString() ?? '';
     });
   }
 
@@ -96,6 +124,76 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
     }
+  }
+
+  Widget _buildProxySettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        Text(
+          '网络代理',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('使用系统代理'),
+          subtitle: const Text('跟随系统代理设置'),
+          value: _useSystemProxy,
+          onChanged: (bool value) async {
+            await ProxyService.setUseSystemProxy(value);
+            setState(() {
+              _useSystemProxy = value;
+            });
+          },
+        ),
+        if (!_useSystemProxy) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    controller: _proxyHostController,
+                    decoration: const InputDecoration(
+                      labelText: '代理主机',
+                      hintText: '例如: 127.0.0.1',
+                    ),
+                    onChanged: (value) async {
+                      await ProxyService.setProxyHost(
+                          value.isEmpty ? null : value);
+                      setState(() {
+                        _proxyHost = value.isEmpty ? null : value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 1,
+                  child: TextField(
+                    controller: _proxyPortController,
+                    decoration: const InputDecoration(
+                      labelText: '端口',
+                      hintText: '例如: 7890',
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) async {
+                      final port = int.tryParse(value);
+                      await ProxyService.setProxyPort(port);
+                      setState(() {
+                        _proxyPort = port;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
@@ -175,6 +273,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         },
                       ),
                     ),
+                    _buildProxySettings(),
                     const Divider(),
                     Text(
                       '关于',

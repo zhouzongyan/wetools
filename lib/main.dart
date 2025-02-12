@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/about_page.dart';
@@ -38,24 +37,26 @@ void main() async {
   };
 
   // 初始化窗口管理器
-  if (Platform.isWindows) {
-    await windowManager.ensureInitialized();
-    await Window.initialize();
-
-    WindowOptions windowOptions = const WindowOptions(
-      size: Size(1280, 800),
-      center: true,
-      title: 'WeTools',
-      minimumSize: Size(800, 600),
+  await windowManager.ensureInitialized();
+  
+  // 配置窗口
+  await windowManager.waitUntilReadyToShow(null, () async {
+    // 设置窗口大小和其他属性
+    await windowManager.setSize(const Size(1280, 800));
+    await windowManager.setMinimumSize(const Size(800, 600));
+    await windowManager.center();
+    
+    // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
+    await windowManager.setPreventClose(false);
+    await windowManager.setSkipTaskbar(false);
+    await windowManager.setTitleBarStyle(
+      TitleBarStyle.normal,
+      windowButtonVisibility: true,
     );
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-      if (Platform.isWindows) {
-        await Window.hideWindowControls();
-      }
-    });
-  }
+    
+    await windowManager.show();
+    await windowManager.focus();
+  });
 
   // 初始化自启动功能
   if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {

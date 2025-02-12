@@ -82,6 +82,7 @@ jobs:
       - name: Set macOS deployment target
         if: matrix.os == 'macos-latest'
         run: |
+          # 设置为 10.14.6 以满足 macos_window_utils 的要求
           echo "MACOSX_DEPLOYMENT_TARGET=10.14.6" >> $GITHUB_ENV
           defaults write $(pwd)/macos/Runner/Info CFBundleMinimumOSVersion "10.14.6"
           plutil -replace LSMinimumSystemVersion -string "10.14.6" macos/Runner/Info.plist
@@ -89,10 +90,11 @@ jobs:
           # 修改 Podfile 中的部署目标
           sed -i '' 's/platform :osx.*/platform :osx, '"'10.14.6'"'/' macos/Podfile
           
-          # 修改 Info.plist
-          plutil -replace CFBundleVersion -string "1.0.61" macos/Runner/Info.plist
-          plutil -replace CFBundleShortVersionString -string "1.0.61" macos/Runner/Info.plist
-          plutil -replace CFBundleIdentifier -string "com.wetools.app" macos/Runner/Info.plist
+          # 修改 Bundle ID
+          plutil -replace CFBundleIdentifier -string "com.example.wetools" macos/Runner/Info.plist
+          
+          # 修改 Xcode 项目的 Bundle ID
+          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = .*/PRODUCT_BUNDLE_IDENTIFIER = "com.example.wetools";/' macos/Runner.xcodeproj/project.pbxproj
           
           # 添加构建信息
           /usr/libexec/PlistBuddy -c "Add :BuildMachineOSBuild string 19H2" macos/Runner/Info.plist || true
