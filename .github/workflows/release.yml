@@ -87,10 +87,17 @@ jobs:
           # 修改 Xcode 项目设置
           /usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion 10.14.6" macos/Runner/Info.plist
           
+          # 修改 Bundle ID
+          plutil -replace CFBundleIdentifier -string "com.example.wetools" macos/Runner/Info.plist
+          
           # 修改 Podfile
           echo "platform :osx, '10.14.6'" > macos/Podfile.new
           tail -n +2 macos/Podfile >> macos/Podfile.new
           mv macos/Podfile.new macos/Podfile
+          
+          # 修改 Xcode 项目配置
+          sed -i '' 's/MACOSX_DEPLOYMENT_TARGET = .*/MACOSX_DEPLOYMENT_TARGET = 10.14.6;/' macos/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = .*/PRODUCT_BUNDLE_IDENTIFIER = "com.example.wetools";/' macos/Runner.xcodeproj/project.pbxproj
           
           # 运行 pod install
           cd macos && pod install && cd ..
