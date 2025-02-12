@@ -134,6 +134,7 @@ class _SystemPageState extends State<SystemPage> {
             const SizedBox(height: 20),
             Card(
               elevation: 2,
+              color: Theme.of(context).cardColor,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

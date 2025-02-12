@@ -118,6 +118,13 @@ class _JwtPageState extends State<JwtPage> {
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
                         enableInteractiveSelection: true,
+                        mouseCursor: SystemMouseCursors.text,
+                        style: const TextStyle(fontFamily: 'JetBrainsMono'),
+                        contextMenuBuilder: (context, editableTextState) {
+                          return AdaptiveTextSelectionToolbar.editableText(
+                            editableTextState: editableTextState,
+                          );
+                        },
                       ),
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 32),
@@ -209,6 +216,13 @@ class _JwtPageState extends State<JwtPage> {
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
                         enableInteractiveSelection: true,
+                        mouseCursor: SystemMouseCursors.text,
+                        style: const TextStyle(fontFamily: 'JetBrainsMono'),
+                        contextMenuBuilder: (context, editableTextState) {
+                          return AdaptiveTextSelectionToolbar.editableText(
+                            editableTextState: editableTextState,
+                          );
+                        },
                       ),
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 32),

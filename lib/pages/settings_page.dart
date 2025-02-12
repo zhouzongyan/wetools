@@ -1,9 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/theme_util.dart';
+import '../services/update_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  String _currentVersion = '';
+  bool _checkingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _currentVersion = packageInfo.version;
+    });
+  }
+
+  Future<void> _checkUpdate(BuildContext context) async {
+    setState(() {
+      _checkingUpdate = true;
+    });
+
+    try {
+      final result = await UpdateService.checkUpdate();
+      if (!mounted) return;
+
+      if (result.hasUpdate) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('发现新版本'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('最新版本: ${result.latestVersion}'),
+                const SizedBox(height: 8),
+                if (result.releaseNotes != null) ...[
+                  const Text('更新内容:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(result.releaseNotes!),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('稍后再说'),
+              ),
+              if (result.downloadUrl != null)
+                FilledButton(
+                  onPressed: () {
+                    UpdateService.downloadUpdate(result.downloadUrl!);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('立即更新'),
+                ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('已是最新版本'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('检查更新失败: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _checkingUpdate = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +175,26 @@ class SettingsPage extends StatelessWidget {
                         },
                       ),
                     ),
+                    const Divider(),
+                    Text(
+                      '关于',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      title: const Text('检查更新'),
+                      subtitle: Text('当前版本: $_currentVersion'),
+                      trailing: _checkingUpdate
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : TextButton(
+                              onPressed: () => _checkUpdate(context),
+                              child: const Text('检查更新'),
+                            ),
+                    ),
                   ],
                 ),
               ),
@@ -91,4 +204,4 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

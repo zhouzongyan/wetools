@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:translator/translator.dart';
+import '../services/translator_service.dart';
 import '../utils/clipboard_util.dart';
 import '../widgets/custom_text_field.dart';
 
@@ -12,11 +12,17 @@ class TranslatePage extends StatefulWidget {
 
 class _TranslatePageState extends State<TranslatePage> {
   final TextEditingController _inputController = TextEditingController();
-  final translator = GoogleTranslator();
+  late TranslatorService _translatorService;
   String _result = '';
   bool _isTranslating = false;
   String _fromLanguage = 'auto';
   String _toLanguage = 'en';
+  String _selectedTranslator = 'deeplx'; // 默认使用 DeepL 翻译
+
+  final Map<String, String> _translators = {
+    'deeplx': 'DeepLX翻译',
+    'google': '谷歌翻译',
+  };
 
   final Map<String, String> _languages = {
     'auto': '自动检测',
@@ -29,6 +35,18 @@ class _TranslatePageState extends State<TranslatePage> {
     'es': '西班牙语',
     'ru': '俄语',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _initTranslator();
+  }
+
+  void _initTranslator() {
+    _translatorService = _selectedTranslator == 'deeplx'
+        ? DeepLTranslatorService()
+        : GoogleTranslatorService();
+  }
 
   Future<void> _translate() async {
     if (_inputController.text.isEmpty) {
@@ -48,20 +66,20 @@ class _TranslatePageState extends State<TranslatePage> {
     });
 
     try {
-      final translation = await translator.translate(
+      final translatedText = await _translatorService.translate(
         _inputController.text,
         from: _fromLanguage,
         to: _toLanguage,
       );
 
       setState(() {
-        _result = translation.text;
+        _result = translatedText;
         _isTranslating = false;
       });
     } catch (e) {
       if (context.mounted) {
         ClipboardUtil.showSnackBar(
-          '翻译失败，请重试',
+          '翻译失败: ${e.toString().replaceAll('Exception: ', '')}',
           backgroundColor: Colors.red,
           margin: EdgeInsets.only(
             bottom: MediaQuery.of(context).size.height - 80,
@@ -69,6 +87,7 @@ class _TranslatePageState extends State<TranslatePage> {
             left: 200,
           ),
         );
+        print('翻译错误: $e'); // 打印错误日志
       }
       setState(() {
         _isTranslating = false;
@@ -90,7 +109,7 @@ class _TranslatePageState extends State<TranslatePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '支持多语言互译,使用谷歌免费翻译服务.请保持网络通畅,避免频繁请求,否则可能会被限制,限制后请稍后重试',
+              '支持多语言互译，提供微软和谷歌翻译服务。请保持网络通畅，避免频繁请求。',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -104,6 +123,28 @@ class _TranslatePageState extends State<TranslatePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    DropdownButtonFormField<String>(
+                      value: _selectedTranslator,
+                      decoration: const InputDecoration(
+                        labelText: '翻译服务',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: _translators.entries
+                          .map((e) => DropdownMenuItem(
+                                value: e.key,
+                                child: Text(e.value),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedTranslator = value;
+                            _initTranslator();
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
