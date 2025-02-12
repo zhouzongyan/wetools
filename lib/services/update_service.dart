@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,8 +25,33 @@ class UpdateService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final latestVersion = (data['tag_name'] as String).replaceAll('v', '');
-        final downloadUrl =
-            data['assets'][0]['browser_download_url'] as String?;
+        final assets = data['assets'] as List;
+        String? downloadUrl;
+
+        // 根据平台选择对应的安装包
+        if (Platform.isWindows) {
+          for (var asset in assets) {
+            if (asset['name'].toString().toLowerCase().contains('windows')) {
+              downloadUrl = asset['browser_download_url'] as String?;
+              break;
+            }
+          }
+        } else if (Platform.isMacOS) {
+          for (var asset in assets) {
+            if (asset['name'].toString().toLowerCase().contains('macos')) {
+              downloadUrl = asset['browser_download_url'] as String?;
+              break;
+            }
+          }
+        } else if (Platform.isLinux) {
+          for (var asset in assets) {
+            if (asset['name'].toString().toLowerCase().contains('linux')) {
+              downloadUrl = asset['browser_download_url'] as String?;
+              break;
+            }
+          }
+        }
+
         final releaseNotes = data['body'] as String?;
 
         // 比较版本号

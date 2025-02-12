@@ -158,7 +158,7 @@ class AppFrame extends StatelessWidget {
           const SizedBox(width: 8),
           _buildMenuItem(
             context,
-            '文件',
+            '首选项',
             [
               PopupMenuItem(
                 child: const Text('设置'),
@@ -210,6 +210,7 @@ class AppFrame extends StatelessWidget {
     List<PopupMenuEntry> items,
   ) {
     return PopupMenuButton(
+      tooltip: '',
       itemBuilder: (_) => items,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
