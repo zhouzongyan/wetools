@@ -85,13 +85,16 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=10.14.6" >> $GITHUB_ENV
           defaults write $(pwd)/macos/Runner/Info CFBundleMinimumOSVersion "10.14.6"
           plutil -replace LSMinimumSystemVersion -string "10.14.6" macos/Runner/Info.plist
+          
           # 修改 Podfile 中的部署目标
           sed -i '' 's/platform :osx.*/platform :osx, '"'10.14.6'"'/' macos/Podfile
           
-          # 使用 xcrun 命令修改 Xcode 项目设置
-          xcrun agvtool new-version -all 1.0.61
+          # 修改 Info.plist
+          plutil -replace CFBundleVersion -string "1.0.61" macos/Runner/Info.plist
+          plutil -replace CFBundleShortVersionString -string "1.0.61" macos/Runner/Info.plist
+          plutil -replace CFBundleIdentifier -string "com.wetools.app" macos/Runner/Info.plist
           
-          # 使用 plutil 修改所有目标的部署版本
+          # 添加构建信息
           /usr/libexec/PlistBuddy -c "Add :BuildMachineOSBuild string 19H2" macos/Runner/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :DTCompiler string com.apple.compilers.llvm.clang.1_0" macos/Runner/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :DTPlatformBuild string 12A7209" macos/Runner/Info.plist || true
