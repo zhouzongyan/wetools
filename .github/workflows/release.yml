@@ -23,7 +23,7 @@ jobs:
             platform: windows
           - os: macos-latest
             output-name: wetools-macos.zip
-            build-command: flutter build macos --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-pub
+            build-command: flutter build macos --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-pub --target-platform macos-arm64,macos-x64 --no-universal
             artifact-path: build/macos/Build/Products/Release/wetools.app
             platform: macos
           - os: ubuntu-latest
@@ -77,6 +77,13 @@ jobs:
 
       - name: Get dependencies
         run: flutter pub get
+
+      # 添加 macOS 最低部署版本设置
+      - name: Set macOS deployment target
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=10.14.6" >> $GITHUB_ENV
+          /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion 10.14.6" macos/Runner/Info.plist
 
       - name: Build application
         run: |
