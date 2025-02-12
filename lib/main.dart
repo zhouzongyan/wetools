@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
+import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
 import 'utils/clipboard_util.dart';
 import 'utils/logger_util.dart';
@@ -9,47 +11,61 @@ import 'package:provider/provider.dart';
 import 'utils/theme_util.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 
-void main() {
-  // 先设置 debugZoneErrorsAreFatal
-  BindingBase.debugZoneErrorsAreFatal = true;
+void main() async {
+  // 确保 Flutter 绑定初始化
+  WidgetsFlutterBinding.ensureInitialized();
 
-  runZonedGuarded(() async {
-    // 在 Zone 内部初始化绑定
-    WidgetsFlutterBinding.ensureInitialized();
-    // 初始化自启动功能
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      launchAtStartup.setup(
-        appName: 'WeTools',
-        appPath: Platform.resolvedExecutable,
-      );
+  // 初始化日志系统
+  await LoggerUtil.init();
+
+  // 设置异常处理
+  FlutterError.onError = (FlutterErrorDetails details) async {
+    await LoggerUtil.error(
+      '未捕获的Flutter异常',
+      details.exception,
+      details.stack,
+    );
+    if (kDebugMode) {
+      FlutterError.dumpErrorToConsole(details);
     }
+  };
 
-    // 初始化日志系统
-    await LoggerUtil.init();
+  PlatformDispatcher.instance.onError = (error, stack) {
+    LoggerUtil.error('未捕获的异步异常', error, stack);
+    return true;
+  };
 
-    // 捕获 Flutter 框架异常
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      await LoggerUtil.error(
-        '未捕获的Flutter异常',
-        details.exception,
-        details.stack,
-      );
-      if (kDebugMode) {
-        FlutterError.dumpErrorToConsole(details);
-      }
-    };
+  // 初始化窗口管理器
+  if (Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(1280, 800),
+      center: true,
+      title: 'WeTools',
+      minimumSize: Size(800, 600),
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
-    // 捕获异步异常
-    PlatformDispatcher.instance.onError = (error, stack) {
-      LoggerUtil.error('未捕获的异步异常', error, stack);
-      return true;
-    };
+  // 初始化自启动功能
+  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    launchAtStartup.setup(
+      appName: 'WeTools',
+      appPath: Platform.resolvedExecutable,
+    );
+  }
 
-    runApp(const MyApp());
-    LoggerUtil.info('应用启动');
-  }, (error, stackTrace) async {
-    await LoggerUtil.error('未捕获的Zone异常', error, stackTrace);
-  });
+  // 禁用辅助功能检查
+  if (Platform.isWindows) {
+    SemanticsService.announce('', TextDirection.ltr);
+  }
+
+  // 运行应用
+  runApp(const MyApp());
+  LoggerUtil.info('应用启动');
 }
 
 class MyApp extends StatelessWidget {

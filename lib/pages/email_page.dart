@@ -207,6 +207,7 @@ class _EmailPageState extends State<EmailPage> {
                                 labelText: '用户名',
                                 hintText: '邮箱账号',
                               ),
+                              keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return '请输入用户名';
@@ -223,6 +224,7 @@ class _EmailPageState extends State<EmailPage> {
                                 labelText: '密码',
                                 hintText: '邮箱密码或授权码',
                               ),
+                              keyboardType: TextInputType.visiblePassword,
                               obscureText: true,
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
@@ -244,6 +246,7 @@ class _EmailPageState extends State<EmailPage> {
                                 labelText: '发件人',
                                 hintText: '发件人邮箱地址',
                               ),
+                              keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return '请输入发件人地址';
