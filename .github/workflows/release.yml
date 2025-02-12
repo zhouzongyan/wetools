@@ -23,7 +23,7 @@ jobs:
             platform: windows
           - os: macos-latest
             output-name: wetools-macos.zip
-            build-command: flutter build macos --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-pub --target-platform macos-arm64,macos-x64 --no-universal
+            build-command: flutter build macos --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-pub
             artifact-path: build/macos/Build/Products/Release/wetools.app
             platform: macos
           - os: ubuntu-latest
