@@ -66,7 +66,8 @@ class MyApp extends StatelessWidget {
             scaffoldMessengerKey: ClipboardUtil.rootScaffoldMessengerKey,
             title: 'WeTools',
             themeMode: themeUtil.themeMode,
-            theme: ThemeData(  // 亮色主题
+            theme: ThemeData(
+              // 亮色主题
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.deepPurple,
                 brightness: Brightness.light,
@@ -99,13 +100,15 @@ class MyApp extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+                  borderSide:
+                      const BorderSide(color: Colors.deepPurple, width: 2),
                 ),
                 contentPadding: const EdgeInsets.all(16),
               ),
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -114,7 +117,8 @@ class MyApp extends StatelessWidget {
               scaffoldBackgroundColor: Colors.white,
               cardColor: Colors.white,
             ),
-            darkTheme: ThemeData(  // 暗色主题
+            darkTheme: ThemeData(
+              // 暗色主题
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.deepPurple,
                 brightness: Brightness.dark,
@@ -149,13 +153,15 @@ class MyApp extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+                  borderSide:
+                      const BorderSide(color: Colors.deepPurple, width: 2),
                 ),
                 contentPadding: const EdgeInsets.all(16),
               ),
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

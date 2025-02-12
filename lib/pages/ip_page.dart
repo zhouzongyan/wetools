@@ -177,7 +177,7 @@ ISP: ${ipData['isp']}
             ),
             const SizedBox(height: 16),
             _buildInfoCard(
-              title: '国外公网IP (ipify)',
+              title: '国外公网IP (api.ipify.org)',
               content: '''
 IP: $_foreignPublicIp
 
@@ -187,7 +187,7 @@ $_foreignIpInfo''',
             ),
             const SizedBox(height: 16),
             _buildInfoCard(
-              title: '国内公网IP (ipip.net)',
+              title: '国内公网IP (myip.ipip.net)',
               content: '''
 IP: $_chinaPublicIp
 

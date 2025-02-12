@@ -33,26 +33,31 @@ class ClipboardUtil {
   }
 
   static void copyToClipboard(String text, BuildContext context) {
+    // 获取屏幕高度
+    final screenHeight = MediaQuery.of(context).size.height;
+
     // 使用 async 方式复制，避免键盘事件冲突
     Future<void> copy() async {
       await Clipboard.setData(ClipboardData(text: text));
     }
 
     copy().then((_) {
-      showSnackBar(
-        '已复制到剪贴板',
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height - 80,
-          right: 200,
-          left: 200,
-        ),
-        action: SnackBarAction(
-          label: '关闭',
-          onPressed: () {
-            rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-          },
-        ),
-      );
+      if (rootScaffoldMessengerKey.currentState != null) {
+        showSnackBar(
+          '已复制到剪贴板',
+          margin: EdgeInsets.only(
+            bottom: screenHeight - 80,
+            right: 200,
+            left: 200,
+          ),
+          action: SnackBarAction(
+            label: '关闭',
+            onPressed: () {
+              rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+            },
+          ),
+        );
+      }
     });
   }
 }

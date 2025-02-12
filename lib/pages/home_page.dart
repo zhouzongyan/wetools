@@ -13,6 +13,7 @@ import 'http_page.dart';
 import 'tcp_page.dart';
 import 'settings_page.dart';
 import 'ip_page.dart';
+import 'email_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -39,10 +40,6 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.code),
       label: Text('Base64'),
     ),
-    // NavigationRailDestination(
-    //   icon: Icon(Icons.image),
-    //   label: Text('Image'),
-    // ),
     NavigationRailDestination(
       icon: Icon(Icons.data_object),
       label: Text('JSON'),
@@ -72,6 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('TCP'),
     ),
     NavigationRailDestination(
+      icon: Icon(Icons.email_outlined),
+      label: Text('Email'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.computer),
       label: Text('System'),
     ),
@@ -89,22 +90,98 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
   ];
 
-  final List<Widget> _pages = const [
-    JwtPage(),
-    UrlPage(),
-    Base64Page(),
-    // ImagePage(),
-    JsonPage(),
-    HashPage(),
-    TextPage(),
-    TimePage(),
-    TranslatePage(),
-    HttpPage(),
-    TcpPage(),
-    SystemPage(),
-    IpPage(),
-    AboutPage(),
-    SettingsPage(),
+  final List<({IconData icon, String title, String subtitle, Widget page})>
+      _pages = [
+    (
+      icon: Icons.token_outlined,
+      title: 'JWT工具',
+      subtitle: 'JWT令牌的编码和解码',
+      page: const JwtPage(),
+    ),
+    (
+      icon: Icons.link_outlined,
+      title: 'URL工具',
+      subtitle: 'URL编码解码',
+      page: const UrlPage(),
+    ),
+    (
+      icon: Icons.code_outlined,
+      title: 'Base64工具',
+      subtitle: 'Base64编码解码',
+      page: const Base64Page(),
+    ),
+    (
+      icon: Icons.data_object_outlined,
+      title: 'JSON工具',
+      subtitle: 'JSON格式化和压缩',
+      page: const JsonPage(),
+    ),
+    (
+      icon: Icons.enhanced_encryption_outlined,
+      title: '哈希/加密',
+      subtitle: '常用哈希算法和加密解密',
+      page: const HashPage(),
+    ),
+    (
+      icon: Icons.text_fields_outlined,
+      title: '文本工具',
+      subtitle: '文本处理工具集合',
+      page: const TextPage(),
+    ),
+    (
+      icon: Icons.access_time_outlined,
+      title: '时间工具',
+      subtitle: '时间戳转换',
+      page: const TimePage(),
+    ),
+    (
+      icon: Icons.translate_outlined,
+      title: '文本翻译',
+      subtitle: '支持多语言互译',
+      page: const TranslatePage(),
+    ),
+    (
+      icon: Icons.http_outlined,
+      title: 'HTTP工具',
+      subtitle: 'HTTP请求测试',
+      page: const HttpPage(),
+    ),
+    (
+      icon: Icons.lan_outlined,
+      title: 'TCP工具',
+      subtitle: 'TCP连接测试',
+      page: const TcpPage(),
+    ),
+    (
+      icon: Icons.email_outlined,
+      title: '邮件发送',
+      subtitle: '支持SMTP邮件发送，可添加多个附件',
+      page: const EmailPage(),
+    ),
+    (
+      icon: Icons.computer_outlined,
+      title: '系统信息',
+      subtitle: '查看系统信息',
+      page: const SystemPage(),
+    ),
+    (
+      icon: Icons.public_outlined,
+      title: 'IP工具',
+      subtitle: 'IP地址查询',
+      page: const IpPage(),
+    ),
+    (
+      icon: Icons.info_outline,
+      title: '关于',
+      subtitle: '关于本软件',
+      page: const AboutPage(),
+    ),
+    (
+      icon: Icons.settings_outlined,
+      title: '设置',
+      subtitle: '软件设置',
+      page: const SettingsPage(),
+    ),
   ];
 
   @override
@@ -137,10 +214,45 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: _pages[_selectedIndex],
+            child: _pages[_selectedIndex].page,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return NavigationDrawer(
+      selectedIndex: _selectedIndex,
+      onDestinationSelected: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
+          child: Text(
+            '开发者工具箱',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        ..._pages.map((page) => NavigationDrawerDestination(
+              icon: Icon(page.icon),
+              label: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(page.title),
+                  Text(
+                    page.subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                        ),
+                  ),
+                ],
+              ),
+            )),
+      ],
     );
   }
 }
