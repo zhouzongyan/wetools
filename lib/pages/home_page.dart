@@ -221,38 +221,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildDrawer() {
-    return NavigationDrawer(
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
-          child: Text(
-            '开发者工具箱',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        ..._pages.map((page) => NavigationDrawerDestination(
-              icon: Icon(page.icon),
-              label: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(page.title),
-                  Text(
-                    page.subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-                ],
-              ),
-            )),
-      ],
-    );
-  }
 }

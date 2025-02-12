@@ -25,6 +25,7 @@ class _EmailPageState extends State<EmailPage> {
   final List<XFile> _attachments = [];
   bool _isSending = false;
   bool _useSSL = true;
+  bool _obscurePassword = true;
   final _picker = ImagePicker();
 
   @override
@@ -66,7 +67,7 @@ class _EmailPageState extends State<EmailPage> {
     });
 
     try {
-      final smtpServer = SmtpServer(
+      SmtpServer(
         _smtpController.text,
         port: int.parse(_portController.text),
         ssl: _useSSL,
@@ -89,7 +90,6 @@ class _EmailPageState extends State<EmailPage> {
             ..location = Location.attachment,
         );
       }
-
 
       if (mounted) {
         ClipboardUtil.showSnackBar(
@@ -220,12 +220,24 @@ class _EmailPageState extends State<EmailPage> {
                           Expanded(
                             child: TextFormField(
                               controller: _passwordController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: '密码',
                                 hintText: '邮箱密码或授权码',
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
                               ),
                               keyboardType: TextInputType.visiblePassword,
-                              obscureText: true,
+                              obscureText: _obscurePassword,
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return '请输入密码';
