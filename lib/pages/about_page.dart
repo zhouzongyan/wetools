@@ -39,8 +39,6 @@ class AboutPage extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text('版本: 1.0.4'),
                       const SizedBox(height: 16),
                       const Text(
                         '开发者:',

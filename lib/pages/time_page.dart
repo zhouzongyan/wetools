@@ -140,6 +140,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
             const SizedBox(height: 24),
             Container(
               width: double.infinity,
+              color: Theme.of(context).cardColor,
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
@@ -157,6 +158,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    
                     children: [
                       const Text('当前时间:',
                           style: TextStyle(fontWeight: FontWeight.bold)),

@@ -5,13 +5,11 @@ import 'package:wetools/pages/json_page.dart';
 import 'package:wetools/pages/jwt_page.dart';
 import 'package:wetools/pages/text_page.dart';
 import 'package:wetools/pages/url_page.dart';
-import 'about_page.dart';
 import 'time_page.dart';
 import 'translate_page.dart';
 import 'system_page.dart';
 import 'http_page.dart';
 import 'tcp_page.dart';
-import 'settings_page.dart';
 import 'ip_page.dart';
 import 'email_page.dart';
 
@@ -73,20 +71,12 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('Email'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.computer),
-      label: Text('System'),
-    ),
-    NavigationRailDestination(
       icon: Icon(Icons.public),
       label: Text('IP'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.info_outline),
-      label: Text('About'),
-    ),
-    NavigationRailDestination(
-      icon: Icon(Icons.settings),
-      label: Text('Settings'),
+      icon: Icon(Icons.computer),
+      label: Text('System'),
     ),
   ];
 
@@ -159,28 +149,16 @@ class _MyHomePageState extends State<MyHomePage> {
       page: const EmailPage(),
     ),
     (
-      icon: Icons.computer_outlined,
-      title: '系统信息',
-      subtitle: '查看系统信息',
-      page: const SystemPage(),
-    ),
-    (
       icon: Icons.public_outlined,
       title: 'IP工具',
       subtitle: 'IP地址查询',
       page: const IpPage(),
     ),
     (
-      icon: Icons.info_outline,
-      title: '关于',
-      subtitle: '关于本软件',
-      page: const AboutPage(),
-    ),
-    (
-      icon: Icons.settings_outlined,
-      title: '设置',
-      subtitle: '软件设置',
-      page: const SettingsPage(),
+      icon: Icons.computer_outlined,
+      title: '系统信息',
+      subtitle: '查看系统信息',
+      page: const SystemPage(),
     ),
   ];
 
@@ -220,5 +198,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
 }
