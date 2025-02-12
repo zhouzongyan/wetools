@@ -87,6 +87,9 @@ jobs:
           plutil -replace LSMinimumSystemVersion -string "10.14.6" macos/Runner/Info.plist
           # 修改 Podfile 中的部署目标
           sed -i '' 's/platform :osx.*/platform :osx, '"'10.14.6'"'/' macos/Podfile
+          # 修改 Xcode 项目设置
+          /usr/libexec/PlistBuddy -c "Set :objects:33:buildSettings:MACOSX_DEPLOYMENT_TARGET 10.14.6" macos/Runner.xcodeproj/project.pbxproj
+          /usr/libexec/PlistBuddy -c "Set :objects:33:buildSettings:PRODUCT_BUNDLE_IDENTIFIER com.wetools.app" macos/Runner.xcodeproj/project.pbxproj
           # 运行 pod install
           cd macos && pod install && cd ..
 
