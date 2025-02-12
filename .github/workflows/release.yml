@@ -83,7 +83,8 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=10.14.6" >> $GITHUB_ENV
-          /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion 10.14.6" macos/Runner/Info.plist
+          defaults write $(pwd)/macos/Runner/Info CFBundleMinimumOSVersion "10.14.6"
+          plutil -replace LSMinimumSystemVersion -string "10.14.6" macos/Runner/Info.plist
 
       - name: Build application
         run: |
