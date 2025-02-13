@@ -160,7 +160,8 @@ class _JsonPageState extends State<JsonPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SelectionArea(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -292,6 +293,6 @@ class _JsonPageState extends State<JsonPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

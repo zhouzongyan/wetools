@@ -171,7 +171,8 @@ ${_formatResponse(response.body)}''';
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SelectionArea(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -304,7 +305,7 @@ ${_formatResponse(response.body)}''';
           ],
         ),
       ),
-    );
+    ));
   }
 
   @override

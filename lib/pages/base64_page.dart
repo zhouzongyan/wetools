@@ -339,264 +339,266 @@ class _Base64PageState extends State<Base64Page> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Base64 编码工具',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Base64 编码解码工具，支持中文等 Unicode 字符',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            // 编码部分
-            Text(
-              'Base64 编码',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (_imageToEncode != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            border:
-                                Border.all(color: Colors.grey.withOpacity(0.3)),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            children: [
-                              Image.memory(
-                                _imageToEncode!,
-                                height: 200,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: _clearEncode,
-                                    child: const Text('移除图片'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      TextField(
-                        controller: _encodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要编码的文本',
-                        ),
-                        maxLines: 5,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
-                      ),
-                      if (_encodeResult.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+    return SelectionArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Base64 编码工具',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Base64 编码解码工具，支持中文等 Unicode 字符',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              // 编码部分
+              Text(
+                'Base64 编码',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (_imageToEncode != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: Colors.grey.withOpacity(0.3)),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 20),
-                                    onPressed: () =>
-                                        ClipboardUtil.copyToClipboard(
-                                            _encodeResult, context),
-                                    tooltip: '复制结果',
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                _encodeResult,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _encodeBase64,
-                      child: const Text('编码'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _pickImage,
-                      child: const Text('选择图片'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _pasteImage,
-                      child: const Text('粘贴图片'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: _clearEncode,
-                      child: const Text('清除'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            // 解码部分
-            Text(
-              'Base64 解码',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: _decodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要解码的 Base64 字符串',
-                        ),
-                        maxLines: 5,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
-                      ),
-                      if (_decodeResult.isNotEmpty ||
-                          _decodedImage != null) ...[
-                        const SizedBox(height: 32),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  if (_decodedImage != null) ...[
-                                    IconButton(
-                                      icon:
-                                          const Icon(Icons.download, size: 20),
-                                      onPressed: _downloadImage,
-                                      tooltip: '下载图片',
+                            child: Column(
+                              children: [
+                                Image.memory(
+                                  _imageToEncode!,
+                                  height: 200,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: _clearEncode,
+                                      child: const Text('移除图片'),
                                     ),
                                   ],
-                                  if (_decodeResult.isNotEmpty)
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        TextField(
+                          controller: _encodeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: '输入要编码的文本',
+                          ),
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                          enableInteractiveSelection: true,
+                        ),
+                        if (_encodeResult.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.1),
+                                  Colors.deepPurple.withOpacity(0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('结果:',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const Spacer(),
                                     IconButton(
                                       icon: const Icon(Icons.copy, size: 20),
                                       onPressed: () =>
                                           ClipboardUtil.copyToClipboard(
-                                              _decodeResult, context),
+                                              _encodeResult, context),
                                       tooltip: '复制结果',
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (_decodedImage != null) ...[
-                                Center(
-                                  child: Image.memory(
-                                    _decodedImage!,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Text('无法显示图片');
-                                    },
-                                  ),
+                                  ],
                                 ),
-                              ] else
+                                const SizedBox(height: 12),
                                 Text(
-                                  _decodeResult,
+                                  _encodeResult,
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              const SizedBox(height: 16),
-                            ],
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
+                        ],
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _encodeBase64,
+                        child: const Text('编码'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _pickImage,
+                        child: const Text('选择图片'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _pasteImage,
+                        child: const Text('粘贴图片'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: _clearEncode,
+                        child: const Text('清除'),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _decodeBase64,
-                      child: const Text('解码'),
+                ],
+              ),
+              const SizedBox(height: 32),
+              // 解码部分
+              Text(
+                'Base64 解码',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _decodeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: '输入要解码的 Base64 字符串',
+                          ),
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                          enableInteractiveSelection: true,
+                        ),
+                        if (_decodeResult.isNotEmpty ||
+                            _decodedImage != null) ...[
+                          const SizedBox(height: 32),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.1),
+                                  Colors.deepPurple.withOpacity(0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('结果:',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const Spacer(),
+                                    if (_decodedImage != null) ...[
+                                      IconButton(
+                                        icon:
+                                            const Icon(Icons.download, size: 20),
+                                        onPressed: _downloadImage,
+                                        tooltip: '下载图片',
+                                      ),
+                                    ],
+                                    if (_decodeResult.isNotEmpty)
+                                      IconButton(
+                                        icon: const Icon(Icons.copy, size: 20),
+                                        onPressed: () =>
+                                            ClipboardUtil.copyToClipboard(
+                                                _decodeResult, context),
+                                        tooltip: '复制结果',
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                if (_decodedImage != null) ...[
+                                  Center(
+                                    child: Image.memory(
+                                      _decodedImage!,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Text('无法显示图片');
+                                      },
+                                    ),
+                                  ),
+                                ] else
+                                  Text(
+                                    _decodeResult,
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _decodeController.clear();
-                          _decodeResult = '';
-                        });
-                      },
-                      child: const Text('清除'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _decodeBase64,
+                        child: const Text('解码'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _decodeController.clear();
+                            _decodeResult = '';
+                          });
+                        },
+                        child: const Text('清除'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

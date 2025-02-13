@@ -36,13 +36,6 @@ class WindowsTextField extends StatelessWidget {
           ),
       readOnly: readOnly,
       onChanged: onChanged,
-      enableInteractiveSelection: true,
-      mouseCursor: SystemMouseCursors.text,
-      contextMenuBuilder: (context, editableTextState) {
-        return AdaptiveTextSelectionToolbar.editableText(
-          editableTextState: editableTextState,
-        );
-      },
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontFamily: 'JetBrainsMono',
           ),

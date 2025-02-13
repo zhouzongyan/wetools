@@ -130,263 +130,271 @@ class _EmailPageState extends State<EmailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '邮件发送',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '支持SMTP邮件发送，可添加多个附件',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+    return SelectionArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '邮件发送',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '支持SMTP邮件发送，可添加多个附件',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                ),
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 2,
+                  color: Theme.of(context).cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(
+                      color: Theme.of(context).dividerColor,
                     ),
-              ),
-              const SizedBox(height: 20),
-              Card(
-                elevation: 2,
-                color: Theme.of(context).cardColor,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              controller: _smtpController,
-                              decoration: const InputDecoration(
-                                labelText: 'SMTP服务器',
-                                hintText: '例如: smtp.gmail.com',
-                              ),
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入SMTP服务器地址';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _portController,
-                              decoration: const InputDecoration(
-                                labelText: '端口',
-                                hintText: '465',
-                              ),
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入端口';
-                                }
-                                if (int.tryParse(value!) == null) {
-                                  return '请输入有效的端口号';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _usernameController,
-                              decoration: const InputDecoration(
-                                labelText: '用户名',
-                                hintText: '邮箱账号',
-                              ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入用户名';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _passwordController,
-                              decoration: InputDecoration(
-                                labelText: '密码',
-                                hintText: '邮箱密码或授权码',
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                controller: _smtpController,
+                                decoration: const InputDecoration(
+                                  labelText: 'SMTP服务器',
+                                  hintText: '例如: smtp.gmail.com',
                                 ),
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入SMTP服务器地址';
+                                  }
+                                  return null;
+                                },
                               ),
-                              keyboardType: TextInputType.visiblePassword,
-                              obscureText: _obscurePassword,
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入密码';
-                                }
-                                return null;
-                              },
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _fromController,
-                              decoration: const InputDecoration(
-                                labelText: '发件人',
-                                hintText: '发件人邮箱地址',
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _portController,
+                                decoration: const InputDecoration(
+                                  labelText: '端口',
+                                  hintText: '465',
+                                ),
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入端口';
+                                  }
+                                  if (int.tryParse(value!) == null) {
+                                    return '请输入有效的端口号';
+                                  }
+                                  return null;
+                                },
                               ),
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入发件人地址';
-                                }
-                                if (!value!.contains('@')) {
-                                  return '请输入有效的邮箱地址';
-                                }
-                                return null;
-                              },
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _toController,
-                              decoration: const InputDecoration(
-                                labelText: '收件人',
-                                hintText: '多个收件人用逗号分隔',
-                              ),
-                              validator: (value) {
-                                if (value?.isEmpty ?? true) {
-                                  return '请输入收件人地址';
-                                }
-                                if (!value!.contains('@')) {
-                                  return '请输入有效的邮箱地址';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _subjectController,
-                        decoration: const InputDecoration(
-                          labelText: '主题',
-                          hintText: '邮件主题',
+                          ],
                         ),
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return '请输入邮件主题';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _contentController,
-                        decoration: const InputDecoration(
-                          labelText: '内容',
-                          hintText: '邮件正文',
-                          alignLabelWithHint: true,
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _usernameController,
+                                decoration: const InputDecoration(
+                                  labelText: '用户名',
+                                  hintText: '邮箱账号',
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入用户名';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _passwordController,
+                                decoration: InputDecoration(
+                                  labelText: '密码',
+                                  hintText: '邮箱密码或授权码',
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                keyboardType: TextInputType.visiblePassword,
+                                obscureText: _obscurePassword,
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入密码';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 5,
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return '请输入邮件内容';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: _pickFiles,
-                            icon: const Icon(Icons.attach_file),
-                            label: const Text('添加附件'),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _fromController,
+                                decoration: const InputDecoration(
+                                  labelText: '发件人',
+                                  hintText: '发件人邮箱地址',
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入发件人地址';
+                                  }
+                                  if (!value!.contains('@')) {
+                                    return '请输入有效的邮箱地址';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _toController,
+                                decoration: const InputDecoration(
+                                  labelText: '收件人',
+                                  hintText: '多个收件人用逗号分隔',
+                                ),
+                                validator: (value) {
+                                  if (value?.isEmpty ?? true) {
+                                    return '请输入收件人地址';
+                                  }
+                                  if (!value!.contains('@')) {
+                                    return '请输入有效的邮箱地址';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _subjectController,
+                          decoration: const InputDecoration(
+                            labelText: '主题',
+                            hintText: '邮件主题',
                           ),
-                          const SizedBox(width: 16),
-                          Checkbox(
-                            value: _useSSL,
-                            onChanged: (value) {
-                              setState(() {
-                                _useSSL = value ?? true;
-                              });
-                            },
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return '请输入邮件主题';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _contentController,
+                          decoration: const InputDecoration(
+                            labelText: '内容',
+                            hintText: '邮件正文',
+                            alignLabelWithHint: true,
                           ),
-                          const Text('使用SSL'),
-                        ],
-                      ),
-                      if (_attachments.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: _attachments.map((file) {
-                            return Chip(
-                              label: Text(file.name),
-                              onDeleted: () {
+                          maxLines: 5,
+                          validator: (value) {
+                            if (value?.isEmpty ?? true) {
+                              return '请输入邮件内容';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: _pickFiles,
+                              icon: const Icon(Icons.attach_file),
+                              label: const Text('添加附件'),
+                            ),
+                            const SizedBox(width: 16),
+                            Checkbox(
+                              value: _useSSL,
+                              onChanged: (value) {
                                 setState(() {
-                                  _attachments.remove(file);
+                                  _useSSL = value ?? true;
                                 });
                               },
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _isSending ? null : _sendEmail,
-                              child: _isSending
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text('发送邮件'),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          OutlinedButton(
-                            onPressed: _resetForm,
-                            child: const Text('重置'),
+                            const Text('使用SSL'),
+                          ],
+                        ),
+                        if (_attachments.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _attachments.map((file) {
+                              return Chip(
+                                label: Text(file.name),
+                                onDeleted: () {
+                                  setState(() {
+                                    _attachments.remove(file);
+                                  });
+                                },
+                              );
+                            }).toList(),
                           ),
                         ],
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isSending ? null : _sendEmail,
+                                child: _isSending
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text('发送邮件'),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            OutlinedButton(
+                              onPressed: _resetForm,
+                              child: const Text('重置'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
