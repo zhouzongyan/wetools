@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/clipboard_util.dart';
+import '../widgets/windows_text_field.dart';
 
 class UrlPage extends StatefulWidget {
   const UrlPage({super.key});
@@ -72,16 +73,12 @@ class _UrlPageState extends State<UrlPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextField(
+                      WindowsTextField(
                         controller: _encodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要编码的 URL',
-                        ),
+                        hintText: '输入要编码的URL',
                         maxLines: 5,
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
                       ),
                       if (_encodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -155,16 +152,12 @@ class _UrlPageState extends State<UrlPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextField(
+                      WindowsTextField(
                         controller: _decodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要解码的 URL',
-                        ),
+                        hintText: '输入要解码的 URL',
                         maxLines: 5,
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
                       ),
                       if (_decodeResult.isNotEmpty) ...[
                         const SizedBox(height: 8),

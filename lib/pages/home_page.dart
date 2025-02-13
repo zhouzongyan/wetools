@@ -7,7 +7,6 @@ import 'package:wetools/pages/text_page.dart';
 import 'package:wetools/pages/url_page.dart';
 import 'time_page.dart';
 import 'translate_page.dart';
-import 'system_page.dart';
 import 'http_page.dart';
 import 'tcp_page.dart';
 import 'ip_page.dart';
@@ -26,10 +25,16 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
   final List<NavigationRailDestination> _destinations = const [
+    // 文本处理类
     NavigationRailDestination(
-      icon: Icon(Icons.security),
-      label: Text('JWT'),
+      icon: Icon(Icons.text_fields),
+      label: Text('文本'),
     ),
+    NavigationRailDestination(
+      icon: Icon(Icons.translate),
+      label: Text('翻译'),
+    ),
+    // 编码解码类
     NavigationRailDestination(
       icon: Icon(Icons.link),
       label: Text('URL'),
@@ -44,20 +49,14 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
     NavigationRailDestination(
       icon: Icon(Icons.key),
+      label: Text('JWT'),
+    ),
+    // 安全工具类
+    NavigationRailDestination(
+      icon: Icon(Icons.security),
       label: Text('Hash'),
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.text_fields),
-      label: Text('Text'),
-    ),
-    NavigationRailDestination(
-      icon: Icon(Icons.access_time),
-      label: Text('Time'),
-    ),
-    NavigationRailDestination(
-      icon: Icon(Icons.translate),
-      label: Text('Translate'),
-    ),
+    // 网络工具类
     NavigationRailDestination(
       icon: Icon(Icons.http),
       label: Text('HTTP'),
@@ -67,99 +66,38 @@ class _MyHomePageState extends State<MyHomePage> {
       label: Text('TCP'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.email_outlined),
-      label: Text('Email'),
-    ),
-    NavigationRailDestination(
       icon: Icon(Icons.public),
       label: Text('IP'),
     ),
+    // 其他工具类
     NavigationRailDestination(
-      icon: Icon(Icons.computer),
-      label: Text('System'),
+      icon: Icon(Icons.timer),
+      label: Text('时间'),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.email),
+      label: Text('邮件'),
     ),
   ];
 
-  final List<({IconData icon, String title, String subtitle, Widget page})>
-      _pages = [
-    (
-      icon: Icons.token_outlined,
-      title: 'JWT工具',
-      subtitle: 'JWT令牌的编码和解码',
-      page: const JwtPage(),
-    ),
-    (
-      icon: Icons.link_outlined,
-      title: 'URL工具',
-      subtitle: 'URL编码解码',
-      page: const UrlPage(),
-    ),
-    (
-      icon: Icons.code_outlined,
-      title: 'Base64工具',
-      subtitle: 'Base64编码解码',
-      page: const Base64Page(),
-    ),
-    (
-      icon: Icons.data_object_outlined,
-      title: 'JSON工具',
-      subtitle: 'JSON格式化和压缩',
-      page: const JsonPage(),
-    ),
-    (
-      icon: Icons.enhanced_encryption_outlined,
-      title: '哈希/加密',
-      subtitle: '常用哈希算法和加密解密',
-      page: const HashPage(),
-    ),
-    (
-      icon: Icons.text_fields_outlined,
-      title: '文本工具',
-      subtitle: '文本处理工具集合',
-      page: const TextPage(),
-    ),
-    (
-      icon: Icons.access_time_outlined,
-      title: '时间工具',
-      subtitle: '时间戳转换',
-      page: const TimePage(),
-    ),
-    (
-      icon: Icons.translate_outlined,
-      title: '文本翻译',
-      subtitle: '支持多语言互译',
-      page: const TranslatePage(),
-    ),
-    (
-      icon: Icons.http_outlined,
-      title: 'HTTP工具',
-      subtitle: 'HTTP请求测试',
-      page: const HttpPage(),
-    ),
-    (
-      icon: Icons.lan_outlined,
-      title: 'TCP工具',
-      subtitle: 'TCP连接测试',
-      page: const TcpPage(),
-    ),
-    (
-      icon: Icons.email_outlined,
-      title: '邮件发送',
-      subtitle: '支持SMTP邮件发送，可添加多个附件',
-      page: const EmailPage(),
-    ),
-    (
-      icon: Icons.public_outlined,
-      title: 'IP工具',
-      subtitle: 'IP地址查询',
-      page: const IpPage(),
-    ),
-    (
-      icon: Icons.computer_outlined,
-      title: '系统信息',
-      subtitle: '查看系统信息',
-      page: const SystemPage(),
-    ),
+  final List<({Widget page, String label})> _pages = const [
+    // 文本处理类
+    (page: TextPage(), label: '文本'),
+    (page: TranslatePage(), label: '翻译'),
+    // 编码解码类
+    (page: UrlPage(), label: 'URL'),
+    (page: Base64Page(), label: 'Base64'),
+    (page: JsonPage(), label: 'JSON'),
+    (page: JwtPage(), label: 'JWT'),
+    // 安全工具类
+    (page: HashPage(), label: 'Hash'),
+    // 网络工具类
+    (page: HttpPage(), label: 'HTTP'),
+    (page: TcpPage(), label: 'TCP'),
+    (page: IpPage(), label: 'IP'),
+    // 其他工具类
+    (page: TimePage(), label: '时间'),
+    (page: EmailPage(), label: '邮件'),
   ];
 
   @override

@@ -6,6 +6,7 @@ import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/about_page.dart';
+import 'pages/system_page.dart';
 import 'utils/clipboard_util.dart';
 import 'utils/logger_util.dart';
 import 'package:provider/provider.dart';
@@ -166,6 +167,10 @@ class AppFrame extends StatelessWidget {
                 onTap: () => _showSettingsDialog(context),
               ),
               PopupMenuItem(
+                child: const Text('系统信息'),
+                onTap: () => _showSystemInfoDialog(context),
+              ),
+              PopupMenuItem(
                 child: const Text('退出'),
                 onTap: () => windowManager.close(),
               ),
@@ -239,6 +244,18 @@ class AppFrame extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
           child: const AboutPage(),
+        ),
+      ),
+    );
+  }
+
+  void _showSystemInfoDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
+          child: const SystemPage(),
         ),
       ),
     );

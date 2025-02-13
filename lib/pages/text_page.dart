@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wetools/widgets/windows_text_field.dart';
 import '../utils/clipboard_util.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'dart:convert';
@@ -361,7 +362,7 @@ GBK字节数: $gbkBytes''';
                       children: [
                         Expanded(
                           flex: 6,
-                          child: CustomTextField(
+                          child: WindowsTextField(
                             controller: _inputController,
                             hintText: '输入要处理的文本',
                             maxLines: 15,

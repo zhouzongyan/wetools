@@ -9,6 +9,7 @@ class WindowsTextField extends StatelessWidget {
   final InputDecoration? decoration;
   final bool readOnly;
   final Function(String)? onChanged;
+  final Function(String)? onSubmitted;
 
   const WindowsTextField({
     super.key,
@@ -20,6 +21,7 @@ class WindowsTextField extends StatelessWidget {
     this.decoration,
     this.readOnly = false,
     this.onChanged,
+    this.onSubmitted,
   });
 
   @override
@@ -36,8 +38,9 @@ class WindowsTextField extends StatelessWidget {
           ),
       readOnly: readOnly,
       onChanged: onChanged,
+      onSubmitted: onSubmitted,
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontFamily: 'JetBrainsMono',
+            fontFamilyFallback: const ['SourceHanSansSC', 'JetBrainsMono'],
           ),
     );
   }

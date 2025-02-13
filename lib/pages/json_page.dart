@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../utils/clipboard_util.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import '../widgets/windows_text_field.dart';
 
 class JsonPage extends StatefulWidget {
   const JsonPage({super.key});
@@ -184,16 +185,12 @@ class _JsonPageState extends State<JsonPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextField(
+                      WindowsTextField(
                         controller: _jsonController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入 JSON 数据',
-                        ),
+                        hintText: '输入JSON文本',
                         maxLines: 10,
                         keyboardType: TextInputType.multiline,
                         textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
                       ),
                       if (_result.isNotEmpty) ...[
                         const SizedBox(height: 16),

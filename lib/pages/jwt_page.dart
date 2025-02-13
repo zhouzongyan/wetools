@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:wetools/widgets/windows_text_field.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
 
@@ -109,23 +110,12 @@ class _JwtPageState extends State<JwtPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextField(
+                        WindowsTextField(
                           controller: _encodeController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '输入要编码的数据（JSON格式）',
-                          ),
+                          hintText: '输入要编码的数据（JSON格式）',
                           maxLines: 5,
                           keyboardType: TextInputType.multiline,
                           textInputAction: TextInputAction.newline,
-                          enableInteractiveSelection: true,
-                          mouseCursor: SystemMouseCursors.text,
-                          style: const TextStyle(fontFamily: 'JetBrainsMono'),
-                          contextMenuBuilder: (context, editableTextState) {
-                            return AdaptiveTextSelectionToolbar.editableText(
-                              editableTextState: editableTextState,
-                            );
-                          },
                         ),
                         if (_encodeResult.isNotEmpty) ...[
                           const SizedBox(height: 32),
@@ -207,23 +197,12 @@ class _JwtPageState extends State<JwtPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        TextField(
+                        WindowsTextField(
                           controller: _decodeController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '输入要解码的 JWT token',
-                          ),
+                          hintText: '输入要解码的 JWT token',
                           maxLines: 5,
                           keyboardType: TextInputType.multiline,
                           textInputAction: TextInputAction.newline,
-                          enableInteractiveSelection: true,
-                          mouseCursor: SystemMouseCursors.text,
-                          style: const TextStyle(fontFamily: 'JetBrainsMono'),
-                          contextMenuBuilder: (context, editableTextState) {
-                            return AdaptiveTextSelectionToolbar.editableText(
-                              editableTextState: editableTextState,
-                            );
-                          },
                         ),
                         if (_decodeResult.isNotEmpty) ...[
                           const SizedBox(height: 32),

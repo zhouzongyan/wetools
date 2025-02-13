@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wetools/widgets/windows_text_field.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
 import 'package:path_provider/path_provider.dart';
@@ -399,16 +400,12 @@ class _Base64PageState extends State<Base64Page> {
                             ),
                           ),
                         ],
-                        TextField(
+                        WindowsTextField(
                           controller: _encodeController,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '输入要编码的文本',
-                          ),
+                          hintText: '输入要编码的文本',
                           maxLines: 5,
                           keyboardType: TextInputType.multiline,
                           textInputAction: TextInputAction.newline,
-                          enableInteractiveSelection: true,
                         ),
                         if (_encodeResult.isNotEmpty) ...[
                           const SizedBox(height: 8),

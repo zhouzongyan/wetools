@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wetools/widgets/windows_text_field.dart';
 import '../utils/clipboard_util.dart';
 import '../widgets/custom_text_field.dart';
 
@@ -186,7 +187,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
               children: [
                 Expanded(
                   flex: 6,
-                  child: CustomTextField(
+                  child: WindowsTextField(
                     controller: _inputController,
                     hintText: '输入时间戳或日期时间（如：2024-01-01 12:00:00）',
                     maxLines: 5,
