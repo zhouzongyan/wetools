@@ -46,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final useSystemProxy = await ProxyService.getUseSystemProxy();
     final proxyHost = await ProxyService.getProxyHost();
     final proxyPort = await ProxyService.getProxyPort();
-    
+
     setState(() {
       _useSystemProxy = useSystemProxy;
       _proxyHost = proxyHost;
@@ -198,7 +198,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SelectionArea(
+        child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -282,7 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 16),
                     ListTile(
                       title: const Text('检查更新'),
-                      subtitle: Text('当前版本: $_currentVersion'),
+                      subtitle: SelectableText('当前版本: $_currentVersion'),
                       trailing: _checkingUpdate
                           ? const SizedBox(
                               width: 20,
@@ -301,6 +302,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

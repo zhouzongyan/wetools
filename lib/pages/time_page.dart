@@ -111,7 +111,7 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
         setState(() {
           _inputController.text = combinedDateTime.toString();
         });
-        
+
         // 自动触发转换
         _convertTime();
       }
@@ -120,10 +120,11 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+    return SelectionArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -140,25 +141,19 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
             const SizedBox(height: 24),
             Container(
               width: double.infinity,
-              color: Theme.of(context).cardColor,
               padding: const EdgeInsets.all(16),
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.deepPurple.withOpacity(0.1),
-                    Colors.deepPurple.withOpacity(0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    
                     children: [
                       const Text('当前时间:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -275,6 +270,6 @@ UTC时间戳(毫秒)：${utc.millisecondsSinceEpoch}
           ],
         ),
       ),
-    );
+    ));
   }
 }

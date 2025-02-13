@@ -42,7 +42,8 @@ class _UrlPageState extends State<UrlPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SelectionArea(
+        child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -88,14 +89,7 @@ class _UrlPageState extends State<UrlPage> {
                           padding: const EdgeInsets.all(16),
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
@@ -178,14 +172,7 @@ class _UrlPageState extends State<UrlPage> {
                           padding: const EdgeInsets.all(16),
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
@@ -240,6 +227,6 @@ class _UrlPageState extends State<UrlPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

@@ -79,218 +79,220 @@ class _JwtPageState extends State<JwtPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'JWT 工具',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'JSON Web Token 编码解码工具，支持签名验证',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            // 编码部分
-            Text(
-              'JWT 编码',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: _encodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要编码的数据（JSON格式）',
-                        ),
-                        maxLines: 5,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
-                        mouseCursor: SystemMouseCursors.text,
-                        style: const TextStyle(fontFamily: 'JetBrainsMono'),
-                        contextMenuBuilder: (context, editableTextState) {
-                          return AdaptiveTextSelectionToolbar.editableText(
-                            editableTextState: editableTextState,
-                          );
-                        },
-                      ),
-                      if (_encodeResult.isNotEmpty) ...[
-                        const SizedBox(height: 32),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+    return SelectionArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'JWT 工具',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'JSON Web Token 编码解码工具，支持签名验证',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              // 编码部分
+              Text(
+                'JWT 编码',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _encodeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: '输入要编码的数据（JSON格式）',
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 20),
-                                    onPressed: () =>
-                                        ClipboardUtil.copyToClipboard(
-                                            _encodeResult, context),
-                                    tooltip: '复制结果',
-                                  ),
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                          enableInteractiveSelection: true,
+                          mouseCursor: SystemMouseCursors.text,
+                          style: const TextStyle(fontFamily: 'JetBrainsMono'),
+                          contextMenuBuilder: (context, editableTextState) {
+                            return AdaptiveTextSelectionToolbar.editableText(
+                              editableTextState: editableTextState,
+                            );
+                          },
+                        ),
+                        if (_encodeResult.isNotEmpty) ...[
+                          const SizedBox(height: 32),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.1),
+                                  Colors.deepPurple.withOpacity(0.05),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              const SizedBox(height: 12),
-                              Text(_encodeResult),
-                              const SizedBox(height: 16),
-                            ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('结果:',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 20),
+                                      onPressed: () =>
+                                          ClipboardUtil.copyToClipboard(
+                                              _encodeResult, context),
+                                      tooltip: '复制结果',
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(_encodeResult),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
+                          const SizedBox(height: 32),
+                        ],
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _encodeJWT,
+                        child: const Text('编码'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _encodeController.clear();
+                            _encodeResult = '';
+                          });
+                        },
+                        child: const Text('清除'),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _encodeJWT,
-                      child: const Text('编码'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _encodeController.clear();
-                          _encodeResult = '';
-                        });
-                      },
-                      child: const Text('清除'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            // 解码部分
-            Text(
-              'JWT 解码',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextField(
-                        controller: _decodeController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: '输入要解码的 JWT token',
-                        ),
-                        maxLines: 5,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        enableInteractiveSelection: true,
-                        mouseCursor: SystemMouseCursors.text,
-                        style: const TextStyle(fontFamily: 'JetBrainsMono'),
-                        contextMenuBuilder: (context, editableTextState) {
-                          return AdaptiveTextSelectionToolbar.editableText(
-                            editableTextState: editableTextState,
-                          );
-                        },
-                      ),
-                      if (_decodeResult.isNotEmpty) ...[
-                        const SizedBox(height: 32),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                ],
+              ),
+              const SizedBox(height: 32),
+              // 解码部分
+              Text(
+                'JWT 解码',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _decodeController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: '输入要解码的 JWT token',
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 20),
-                                    onPressed: () =>
-                                        ClipboardUtil.copyToClipboard(
-                                            _decodeResult, context),
-                                    tooltip: '复制结果',
-                                  ),
+                          maxLines: 5,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                          enableInteractiveSelection: true,
+                          mouseCursor: SystemMouseCursors.text,
+                          style: const TextStyle(fontFamily: 'JetBrainsMono'),
+                          contextMenuBuilder: (context, editableTextState) {
+                            return AdaptiveTextSelectionToolbar.editableText(
+                              editableTextState: editableTextState,
+                            );
+                          },
+                        ),
+                        if (_decodeResult.isNotEmpty) ...[
+                          const SizedBox(height: 32),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.1),
+                                  Colors.deepPurple.withOpacity(0.05),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              const SizedBox(height: 12),
-                              Text(_decodeResult),
-                              const SizedBox(height: 16),
-                            ],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('结果:',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 20),
+                                      onPressed: () =>
+                                          ClipboardUtil.copyToClipboard(
+                                              _decodeResult, context),
+                                      tooltip: '复制结果',
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(_decodeResult),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
+                          const SizedBox(height: 32),
+                        ],
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _decodeJWT,
+                        child: const Text('解码'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _decodeController.clear();
+                            _decodeResult = '';
+                          });
+                        },
+                        child: const Text('清除'),
+                      ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _decodeJWT,
-                      child: const Text('解码'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _decodeController.clear();
-                          _decodeResult = '';
-                        });
-                      },
-                      child: const Text('清除'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

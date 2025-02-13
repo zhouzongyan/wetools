@@ -55,7 +55,8 @@ class _HashPageState extends State<HashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SelectionArea(
+      child: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -204,6 +205,6 @@ class _HashPageState extends State<HashPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

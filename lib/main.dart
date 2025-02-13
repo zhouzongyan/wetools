@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               // 亮色主题
               colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
+                seedColor: Colors.white,
                 brightness: Brightness.light,
               ),
               useMaterial3: true,
@@ -121,7 +121,7 @@ class MyApp extends StatelessWidget {
             darkTheme: ThemeData(
               // 暗色主题
               colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
+                seedColor: Colors.black,
                 brightness: Brightness.dark,
               ),
               useMaterial3: true,

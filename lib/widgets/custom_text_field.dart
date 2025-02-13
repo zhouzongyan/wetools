@@ -42,11 +42,6 @@ class CustomTextField extends StatelessWidget {
       autofocus: autofocus,
       keyboardType: keyboardType ??
           (maxLines == 1 ? TextInputType.text : TextInputType.multiline),
-      contextMenuBuilder: (context, editableTextState) {
-        return AdaptiveTextSelectionToolbar.editableText(
-          editableTextState: editableTextState,
-        );
-      },
     );
   }
 }
