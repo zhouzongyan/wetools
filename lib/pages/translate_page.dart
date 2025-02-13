@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:wetools/widgets/windows_text_field.dart';
 import '../services/translator_service.dart';
 import '../utils/clipboard_util.dart';
-import '../widgets/custom_text_field.dart';
 
 class TranslatePage extends StatefulWidget {
   const TranslatePage({super.key});

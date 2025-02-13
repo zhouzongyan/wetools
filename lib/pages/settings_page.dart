@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wetools/widgets/windows_text_field.dart';
 import '../utils/theme_util.dart';
 import '../services/update_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/proxy_service.dart';
+import '../utils/settings_util.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -199,8 +201,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-        child: SingleChildScrollView(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,6 +277,60 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildProxySettings(),
                     const Divider(),
+                    
+                    Text(
+                      '剪贴板',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          _buildNumberField(
+                            label: '历史记录最大数量',
+                            initialValue: SettingsUtil.defaultMaxHistoryItems,
+                            onChanged: (value) {
+                              if (value != null && value > 0) {
+                                SettingsUtil.setMaxHistoryItems(value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildNumberField(
+                            label: '收藏夹最大数量',
+                            initialValue: SettingsUtil.defaultMaxFavoriteItems,
+                            onChanged: (value) {
+                              if (value != null && value > 0) {
+                                SettingsUtil.setMaxFavoriteItems(value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildNumberField(
+                            label: '忽略超过多少字符的文本',
+                            initialValue: SettingsUtil.defaultMaxTextLength,
+                            onChanged: (value) {
+                              if (value != null && value > 0) {
+                                SettingsUtil.setMaxTextLength(value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildNumberField(
+                            label: '清理间隔（小时）',
+                            initialValue: SettingsUtil.defaultCleanupInterval,
+                            onChanged: (value) {
+                              if (value != null && value > 0) {
+                                SettingsUtil.setCleanupInterval(value);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(),
+                    
                     Text(
                       '关于',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -302,6 +357,33 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-    ));
+    );
+  }
+
+  Widget _buildNumberField({
+    required String label,
+    required int initialValue,
+    required Function(int?) onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(label),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          flex: 3,
+          child: WindowsTextField(
+            controller: TextEditingController(text: initialValue.toString()),
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              final intValue = int.tryParse(value);
+              onChanged(intValue);
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

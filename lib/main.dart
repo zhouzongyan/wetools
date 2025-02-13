@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/semantics.dart';
 import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
@@ -65,11 +64,6 @@ void main() async {
       appName: 'WeTools',
       appPath: Platform.resolvedExecutable,
     );
-  }
-
-  // 禁用辅助功能检查
-  if (Platform.isWindows) {
-    SemanticsService.announce('', TextDirection.ltr);
   }
 
   // 运行应用
@@ -229,6 +223,9 @@ class AppFrame extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
           child: const SettingsPage(),
@@ -241,6 +238,9 @@ class AppFrame extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
           child: const AboutPage(),
@@ -253,6 +253,9 @@ class AppFrame extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
           child: const SystemPage(),

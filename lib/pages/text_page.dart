@@ -3,7 +3,6 @@ import 'package:wetools/widgets/windows_text_field.dart';
 import '../utils/clipboard_util.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'dart:convert';
-import '../widgets/custom_text_field.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
