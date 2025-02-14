@@ -28,6 +28,10 @@ class _ClipboardPageState extends State<ClipboardPage> {
   Set<String> _deletedItems = {};
   final _prefs = SharedPreferences.getInstance();
 
+  // 添加搜索控制器和状态
+  final _searchController = TextEditingController();
+  String _searchText = '';
+
   void _initCleanupTimer() {
     _cleanupTimer?.cancel();
     _cleanupTimer = Timer.periodic(
@@ -267,11 +271,22 @@ class _ClipboardPageState extends State<ClipboardPage> {
   @override
   void dispose() {
     _cleanupTimer?.cancel();
+    _searchController.dispose(); // 添加搜索控制器的销毁
     _saveHistory();
     _saveFavorites();
     _saveDeletedItems();
     SettingsUtil.removeListener(_loadSettings);
     super.dispose();
+  }
+
+  // 添加过滤方法
+  List<ClipboardItem> _filterItems(List<ClipboardItem> items) {
+    if (_searchText.isEmpty) return items;
+    return items.where((item) {
+      if (item.isImage) return false;
+      return item.text?.toLowerCase().contains(_searchText.toLowerCase()) ??
+          false;
+    }).toList();
   }
 
   @override
@@ -302,6 +317,32 @@ class _ClipboardPageState extends State<ClipboardPage> {
                   '• 文本最大长度：$_maxTextLength 字符\n'
                   '• 清理间隔：$_cleanupInterval 小时',
                   style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                // 添加搜索框
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: '搜索文本内容...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchText.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchText = '';
+                              });
+                            },
+                          )
+                        : null,
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchText = value;
+                    });
+                  },
                 ),
               ],
             ),
@@ -340,22 +381,40 @@ class _ClipboardPageState extends State<ClipboardPage> {
   }
 
   Widget _buildHistoryList() {
+    final filteredItems = _filterItems(_clipboardHistory);
+    if (filteredItems.isEmpty) {
+      return const Center(
+        child: Text(
+          '没有找到匹配的内容',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _clipboardHistory.length,
+      itemCount: filteredItems.length,
       itemBuilder: (context, index) {
-        final item = _clipboardHistory[index];
+        final item = filteredItems[index];
         return _buildClipboardItem(item, inFavorites: false);
       },
     );
   }
 
   Widget _buildFavoritesList() {
+    final filteredItems = _filterItems(_favorites);
+    if (filteredItems.isEmpty) {
+      return const Center(
+        child: Text(
+          '没有找到匹配的内容',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _favorites.length,
+      itemCount: filteredItems.length,
       itemBuilder: (context, index) {
-        final item = _favorites[index];
+        final item = filteredItems[index];
         return _buildClipboardItem(item, inFavorites: true);
       },
     );

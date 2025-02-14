@@ -1,9 +1,13 @@
+import 'package:code_text_field/code_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../widgets/windows_text_field.dart';
+import 'package:highlight/languages/json.dart' as highlight;
+import 'package:flutter_highlight/themes/monokai-sublime.dart';
+import 'package:flutter_highlight/themes/vs.dart';
 
 class JsonPage extends StatefulWidget {
   const JsonPage({super.key});
@@ -13,40 +17,101 @@ class JsonPage extends StatefulWidget {
 }
 
 class _JsonPageState extends State<JsonPage> {
-  final TextEditingController _jsonController = TextEditingController();
+  late CodeController _codeController;
   String _result = '';
+  String? _errorText;
+  bool _isDarkMode = false;
+  final FocusNode _editorFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
 
-  void _formatJson() {
-    try {
-      final dynamic parsed = json.decode(_jsonController.text);
-      final String formatted =
-          const JsonEncoder.withIndent('  ').convert(parsed);
+  @override
+  void initState() {
+    super.initState();
+    _codeController = CodeController(
+      text: '',
+      language: highlight.json,
+      params: const EditorParams(
+        tabSpaces: 2,
+      ),
+    );
+    _codeController.addListener(_validateJson);
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _editorFocusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _validateJson() {
+    final text = _codeController.text;
+    if (text.trim().isEmpty) {
       setState(() {
-        _result = formatted;
+        _errorText = null;
+      });
+      return;
+    }
+
+    try {
+      jsonDecode(text);
+      setState(() {
+        _errorText = null;
       });
     } catch (e) {
       setState(() {
-        _result = '错误: 无效的 JSON 格式\n${e.toString()}';
+        _errorText = e.toString();
+      });
+    }
+  }
+
+  void _formatJson() {
+    try {
+      final dynamic parsed = jsonDecode(_codeController.text);
+      final String formatted =
+          const JsonEncoder.withIndent('  ').convert(parsed);
+      setState(() {
+        _codeController.text = formatted;
+        _errorText = null;
+      });
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          _codeController.selection = const TextSelection.collapsed(offset: 0);
+          _codeController.text = _codeController.text;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('格式化成功'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorText = '格式化失败: JSON 格式不合法';
       });
     }
   }
 
   void _compressJson() {
     try {
-      final dynamic parsed = json.decode(_jsonController.text);
-      final String compressed = json.encode(parsed);
+      final dynamic parsed = jsonDecode(_codeController.text);
+      final String compressed = jsonEncode(parsed);
       setState(() {
         _result = compressed;
+        _errorText = null;
       });
     } catch (e) {
       setState(() {
         _result = '错误: 无效的 JSON 格式\n${e.toString()}';
+        _errorText = e.toString();
       });
     }
   }
 
   void _escapeJson() {
-    final String escaped = _jsonController.text
+    final String escaped = _codeController.text
         .replaceAll(r'\', r'\\')
         .replaceAll('"', r'\"')
         .replaceAll('\n', r'\n')
@@ -59,20 +124,22 @@ class _JsonPageState extends State<JsonPage> {
 
   void _unescapeJson() {
     try {
-      final String unescaped = json.decode('"${_jsonController.text}"');
+      final String unescaped = jsonDecode('"${_codeController.text}"');
       setState(() {
         _result = unescaped;
+        _errorText = null;
       });
     } catch (e) {
       setState(() {
         _result = '错误: 无效的转义字符串\n${e.toString()}';
+        _errorText = e.toString();
       });
     }
   }
 
   void _unicodeToString() {
     try {
-      final String text = _jsonController.text;
+      final String text = _codeController.text;
       final String converted = text.replaceAllMapped(
         RegExp(r'\\u([0-9a-fA-F]{4})'),
         (match) => String.fromCharCode(
@@ -90,7 +157,7 @@ class _JsonPageState extends State<JsonPage> {
   }
 
   void _stringToUnicode() {
-    final String text = _jsonController.text;
+    final String text = _codeController.text;
     final StringBuffer buffer = StringBuffer();
     for (int i = 0; i < text.length; i++) {
       if (text.codeUnitAt(i) > 127) {
@@ -139,7 +206,8 @@ class _JsonPageState extends State<JsonPage> {
           action: SnackBarAction(
             label: '知道了',
             onPressed: () {
-              ClipboardUtil.rootScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+              ClipboardUtil.rootScaffoldMessengerKey.currentState
+                  ?.hideCurrentSnackBar();
             },
           ),
         );
@@ -159,137 +227,255 @@ class _JsonPageState extends State<JsonPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return SelectionArea(
-      child: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'JSON 工具',
-              style: Theme.of(context).textTheme.headlineMedium,
+  Widget _buildEditor() {
+    _isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = _isDarkMode ? Colors.grey.shade300 : Colors.grey.shade900;
+    final backgroundColor =
+        _isDarkMode ? const Color(0xFF272822) : Colors.white;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _errorText != null ? Colors.red : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CodeField(
+              controller: _codeController,
+              textStyle: TextStyle(
+                fontFamily: 'JetBrainsMono',
+                color: textColor,
+                fontSize: 14,
+              ),
+              lineNumberStyle: LineNumberStyle(
+                textStyle: TextStyle(
+                  color: _isDarkMode ? Colors.grey : Colors.grey.shade600,
+                ),
+              ),
+              background: backgroundColor,
+              minLines: 10,
+              maxLines: null,
             ),
-            const SizedBox(height: 4),
-            const Text(
-              'JSON 格式化、压缩、转义及 Unicode 转换工具',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Row(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      WindowsTextField(
-                        controller: _jsonController,
-                        hintText: '输入JSON文本',
-                        maxLines: 10,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                      ),
-                      if (_result.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.deepPurple.withOpacity(0.1),
-                                Colors.deepPurple.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text('结果:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.save_alt, size: 20),
-                                    onPressed: () => _saveToFile(_result),
-                                    tooltip: '保存为文件',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 20),
-                                    onPressed: () =>
-                                        ClipboardUtil.copyToClipboard(
-                                            _result, context),
-                                    tooltip: '复制结果',
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(_result),
-                              const SizedBox(height: 32),
-                            ],
+                Material(
+                  color: Colors.transparent,
+                  child: Tooltip(
+                    message: '复制',
+                    preferBelow: false,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () => ClipboardUtil.copyToClipboard(
+                          _codeController.text, context),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceVariant
+                              .withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.5),
                           ),
                         ),
-                      ],
-                    ],
+                        child: Icon(
+                          Icons.copy,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _formatJson,
-                      child: const Text('格式化'),
+                const SizedBox(width: 8),
+                Material(
+                  color: Colors.transparent,
+                  child: Tooltip(
+                    message: '格式化',
+                    preferBelow: false,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: _formatJson,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceVariant
+                              .withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.5),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.format_align_left,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _compressJson,
-                      child: const Text('压缩'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _escapeJson,
-                      child: const Text('转义'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _unescapeJson,
-                      child: const Text('去除转义'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _unicodeToString,
-                      child: const Text('Unicode转中文'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _stringToUnicode,
-                      child: const Text('中文转Unicode'),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _jsonController.clear();
-                          _result = '';
-                        });
-                      },
-                      child: const Text('清除'),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return SelectionArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'JSON 工具',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'JSON 格式化、压缩、转义及 Unicode 转换工具',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildEditor(),
+                        if (_errorText != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _errorText!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        if (_result.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.deepPurple.withOpacity(0.1),
+                                  Colors.deepPurple.withOpacity(0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('结果:',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 20),
+                                      onPressed: () =>
+                                          ClipboardUtil.copyToClipboard(
+                                              _result, context),
+                                      tooltip: '复制结果',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, size: 20),
+                                      onPressed: () {
+                                        setState(() {
+                                          _codeController.text = _result;
+                                          _result = '';
+                                        });
+                                      },
+                                      tooltip: '应用到编辑器',
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(_result),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _compressJson,
+                        child: const Text('压缩'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _escapeJson,
+                        child: const Text('转义'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _unescapeJson,
+                        child: const Text('去除转义'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _unicodeToString,
+                        child: const Text('Unicode转中文'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _stringToUnicode,
+                        child: const Text('中文转Unicode'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _codeController.text = '';
+                            _result = '';
+                            _errorText = null;
+                          });
+                        },
+                        child: const Text('清除'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }
