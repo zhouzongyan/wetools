@@ -7,10 +7,30 @@ class SettingsUtil {
   static const String _cleanupIntervalKey = 'clipboard_cleanup_interval';
 
   // 默认值
-  static const int defaultMaxHistoryItems = 500;
-  static const int defaultMaxFavoriteItems = 20;
+  static const int defaultMaxHistoryItems = 100;
+  static const int defaultMaxFavoriteItems = 50;
   static const int defaultMaxTextLength = 10000;
   static const int defaultCleanupInterval = 24; // 小时
+
+  // 设置变更监听器列表
+  static final List<Function()> _listeners = [];
+
+  // 添加监听器
+  static void addListener(Function() listener) {
+    _listeners.add(listener);
+  }
+
+  // 移除监听器
+  static void removeListener(Function() listener) {
+    _listeners.remove(listener);
+  }
+
+  // 通知所有监听器设置已更改
+  static void notifySettingsChanged() {
+    for (var listener in _listeners) {
+      listener();
+    }
+  }
 
   static Future<int> getMaxHistoryItems() async {
     final prefs = await SharedPreferences.getInstance();
@@ -51,4 +71,4 @@ class SettingsUtil {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_cleanupIntervalKey, value);
   }
-} 
+}

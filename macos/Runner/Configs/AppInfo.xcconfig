@@ -8,7 +8,7 @@
 PRODUCT_NAME = wetools
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.wetools
+PRODUCT_BUNDLE_IDENTIFIER = top.caoayu.wetools
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 top.caoayu. All rights reserved.

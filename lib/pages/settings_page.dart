@@ -23,11 +23,19 @@ class _SettingsPageState extends State<SettingsPage> {
   final _proxyHostController = TextEditingController();
   final _proxyPortController = TextEditingController();
 
+  // 添加临时状态变量
+  int _tempMaxHistoryItems = SettingsUtil.defaultMaxHistoryItems;
+  int _tempMaxFavoriteItems = SettingsUtil.defaultMaxFavoriteItems;
+  int _tempMaxTextLength = SettingsUtil.defaultMaxTextLength;
+  int _tempCleanupInterval = SettingsUtil.defaultCleanupInterval;
+  bool _hasUnsavedChanges = false;
+
   @override
   void initState() {
     super.initState();
     _loadVersion();
     _loadProxySettings();
+    _loadClipboardSettings();
   }
 
   @override
@@ -56,6 +64,37 @@ class _SettingsPageState extends State<SettingsPage> {
       _proxyHostController.text = proxyHost ?? '';
       _proxyPortController.text = proxyPort?.toString() ?? '';
     });
+  }
+
+  Future<void> _loadClipboardSettings() async {
+    _tempMaxHistoryItems = await SettingsUtil.getMaxHistoryItems();
+    _tempMaxFavoriteItems = await SettingsUtil.getMaxFavoriteItems();
+    _tempMaxTextLength = await SettingsUtil.getMaxTextLength();
+    _tempCleanupInterval = await SettingsUtil.getCleanupInterval();
+    setState(() {});
+  }
+
+  Future<void> _saveClipboardSettings() async {
+    await SettingsUtil.setMaxHistoryItems(_tempMaxHistoryItems);
+    await SettingsUtil.setMaxFavoriteItems(_tempMaxFavoriteItems);
+    await SettingsUtil.setMaxTextLength(_tempMaxTextLength);
+    await SettingsUtil.setCleanupInterval(_tempCleanupInterval);
+
+    setState(() {
+      _hasUnsavedChanges = false;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('设置已保存'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    // 通知设置已更改
+    SettingsUtil.notifySettingsChanged();
   }
 
   Future<void> _checkUpdate(BuildContext context) async {
@@ -277,7 +316,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildProxySettings(),
                     const Divider(),
-                    
                     Text(
                       '剪贴板',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -289,48 +327,71 @@ class _SettingsPageState extends State<SettingsPage> {
                         children: [
                           _buildNumberField(
                             label: '历史记录最大数量',
-                            initialValue: SettingsUtil.defaultMaxHistoryItems,
+                            initialValue: _tempMaxHistoryItems,
                             onChanged: (value) {
                               if (value != null && value > 0) {
-                                SettingsUtil.setMaxHistoryItems(value);
+                                setState(() {
+                                  _tempMaxHistoryItems = value;
+                                  _hasUnsavedChanges = true;
+                                });
                               }
                             },
                           ),
                           const SizedBox(height: 16),
                           _buildNumberField(
                             label: '收藏夹最大数量',
-                            initialValue: SettingsUtil.defaultMaxFavoriteItems,
+                            initialValue: _tempMaxFavoriteItems,
                             onChanged: (value) {
                               if (value != null && value > 0) {
-                                SettingsUtil.setMaxFavoriteItems(value);
+                                setState(() {
+                                  _tempMaxFavoriteItems = value;
+                                  _hasUnsavedChanges = true;
+                                });
                               }
                             },
                           ),
                           const SizedBox(height: 16),
                           _buildNumberField(
                             label: '忽略超过多少字符的文本',
-                            initialValue: SettingsUtil.defaultMaxTextLength,
+                            initialValue: _tempMaxTextLength,
                             onChanged: (value) {
                               if (value != null && value > 0) {
-                                SettingsUtil.setMaxTextLength(value);
+                                setState(() {
+                                  _tempMaxTextLength = value;
+                                  _hasUnsavedChanges = true;
+                                });
                               }
                             },
                           ),
                           const SizedBox(height: 16),
                           _buildNumberField(
                             label: '清理间隔（小时）',
-                            initialValue: SettingsUtil.defaultCleanupInterval,
+                            initialValue: _tempCleanupInterval,
                             onChanged: (value) {
                               if (value != null && value > 0) {
-                                SettingsUtil.setCleanupInterval(value);
+                                setState(() {
+                                  _tempCleanupInterval = value;
+                                  _hasUnsavedChanges = true;
+                                });
                               }
                             },
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FilledButton(
+                                onPressed: _hasUnsavedChanges
+                                    ? _saveClipboardSettings
+                                    : null,
+                                child: const Text('保存设置'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     const Divider(),
-                    
                     Text(
                       '关于',
                       style: Theme.of(context).textTheme.titleLarge,

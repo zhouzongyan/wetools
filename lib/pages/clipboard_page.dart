@@ -17,16 +17,24 @@ class ClipboardPage extends StatefulWidget {
 }
 
 class _ClipboardPageState extends State<ClipboardPage> {
-  late Timer _cleanupTimer;
+  Timer? _cleanupTimer;
   int _maxHistoryItems = SettingsUtil.defaultMaxHistoryItems;
   int _maxFavoriteItems = SettingsUtil.defaultMaxFavoriteItems;
   int _maxTextLength = SettingsUtil.defaultMaxTextLength;
   int _cleanupInterval = SettingsUtil.defaultCleanupInterval;
-  
+
   List<ClipboardItem> _clipboardHistory = [];
   List<ClipboardItem> _favorites = [];
   Set<String> _deletedItems = {};
   final _prefs = SharedPreferences.getInstance();
+
+  void _initCleanupTimer() {
+    _cleanupTimer?.cancel();
+    _cleanupTimer = Timer.periodic(
+      Duration(hours: _cleanupInterval),
+      (_) => _cleanupDeletedItems(),
+    );
+  }
 
   @override
   void initState() {
@@ -36,6 +44,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
     _loadFavorites();
     _loadDeletedItems();
     _startListeningClipboard();
+    SettingsUtil.addListener(_loadSettings);
   }
 
   Future<void> _loadSettings() async {
@@ -43,11 +52,31 @@ class _ClipboardPageState extends State<ClipboardPage> {
     _maxFavoriteItems = await SettingsUtil.getMaxFavoriteItems();
     _maxTextLength = await SettingsUtil.getMaxTextLength();
     _cleanupInterval = await SettingsUtil.getCleanupInterval();
-    
-    _cleanupTimer = Timer.periodic(
-      Duration(hours: _cleanupInterval),
-      (_) => _cleanupDeletedItems(),
-    );
+
+    _initCleanupTimer();
+
+    // 重新加载历史记录和收藏夹
+    await _loadHistory();
+    await _loadFavorites();
+
+    // 确保历史记录和收藏夹符合新的限制
+    if (_clipboardHistory.length > _maxHistoryItems) {
+      setState(() {
+        _clipboardHistory = _clipboardHistory.sublist(0, _maxHistoryItems);
+      });
+      await _saveHistory();
+    }
+
+    if (_favorites.length > _maxFavoriteItems) {
+      setState(() {
+        _favorites = _favorites.sublist(0, _maxFavoriteItems);
+      });
+      await _saveFavorites();
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -162,7 +191,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return false;
-      
+
       // 先尝试获取图片
       final imageData = await Pasteboard.image;
       if (imageData != null) {
@@ -174,16 +203,14 @@ class _ClipboardPageState extends State<ClipboardPage> {
           imageData: imageData,
           timestamp: DateTime.now(),
         );
-        
+
         if (!_clipboardHistory.contains(newItem)) {
           setState(() {
             _clipboardHistory.insert(0, newItem);
             // 限制历史记录数量
             if (_clipboardHistory.length > _maxHistoryItems) {
               _clipboardHistory.removeRange(
-                _maxHistoryItems, 
-                _clipboardHistory.length
-              );
+                  _maxHistoryItems, _clipboardHistory.length);
             }
           });
           _saveHistory();
@@ -194,7 +221,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
       // 如果没有图片，尝试获取文本
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       final text = clipboardData?.text;
-      
+
       if (text != null && text.isNotEmpty) {
         // 忽略过长的文本
         if (text.length > _maxTextLength) {
@@ -209,22 +236,20 @@ class _ClipboardPageState extends State<ClipboardPage> {
           text: text,
           timestamp: DateTime.now(),
         );
-        
+
         if (!_clipboardHistory.contains(newItem)) {
           setState(() {
             _clipboardHistory.insert(0, newItem);
             // 限制历史记录数量
             if (_clipboardHistory.length > _maxHistoryItems) {
               _clipboardHistory.removeRange(
-                _maxHistoryItems, 
-                _clipboardHistory.length
-              );
+                  _maxHistoryItems, _clipboardHistory.length);
             }
           });
           _saveHistory();
         }
       }
-      
+
       return true;
     });
   }
@@ -241,10 +266,11 @@ class _ClipboardPageState extends State<ClipboardPage> {
 
   @override
   void dispose() {
-    _cleanupTimer.cancel();
+    _cleanupTimer?.cancel();
     _saveHistory();
     _saveFavorites();
     _saveDeletedItems();
+    SettingsUtil.removeListener(_loadSettings);
     super.dispose();
   }
 
@@ -268,6 +294,15 @@ class _ClipboardPageState extends State<ClipboardPage> {
                   '自动记录系统剪贴板内容，支持收藏常用内容',
                   style: TextStyle(color: Colors.grey),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  '当前设置：\n'
+                  '• 历史记录最大数量：$_maxHistoryItems\n'
+                  '• 收藏夹最大数量：$_maxFavoriteItems\n'
+                  '• 文本最大长度：$_maxTextLength 字符\n'
+                  '• 清理间隔：$_cleanupInterval 小时',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -276,7 +311,8 @@ class _ClipboardPageState extends State<ClipboardPage> {
               length: 2,
               child: Column(
                 children: [
-                  Material( // 添加 Material widget
+                  Material(
+                    // 添加 Material widget
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: TabBar(
                       tabs: const [
@@ -327,7 +363,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
 
   Widget _buildClipboardItem(ClipboardItem item, {required bool inFavorites}) {
     final isFavorited = _favorites.contains(item);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -338,7 +374,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
                 fit: BoxFit.contain,
               )
             : Text(
-                item.text ?? '',  // 添加空字符串作为默认值
+                item.text ?? '', // 添加空字符串作为默认值
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -364,23 +400,27 @@ class _ClipboardPageState extends State<ClipboardPage> {
               },
               tooltip: isFavorited ? '取消收藏' : '收藏',
             ),
+            if (!item.isImage) // 只有文本才显示复制按钮
+              IconButton(
+                icon: const Icon(Icons.copy),
+                onPressed: () {
+                  if (item.text != null) {
+                    ClipboardUtil.copyToClipboard(item.text!, context);
+                  }
+                },
+                tooltip: '复制',
+              ),
             IconButton(
-              icon: const Icon(Icons.copy),
+              icon: const Icon(Icons.download),
               onPressed: () {
                 if (item.isImage && item.imageData != null) {
-                  Pasteboard.writeImage(item.imageData!);
+                  _saveImage(item.imageData!);
                 } else if (item.text != null) {
-                  ClipboardUtil.copyToClipboard(item.text!, context);
+                  _saveText(item.text!);
                 }
               },
-              tooltip: '复制',
+              tooltip: item.isImage ? '保存图片' : '保存文本',
             ),
-            if (item.isImage && item.imageData != null)
-              IconButton(
-                icon: const Icon(Icons.download),
-                onPressed: () => _saveImage(item.imageData!),
-                tooltip: '保存图片',
-              ),
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () {
@@ -435,6 +475,44 @@ class _ClipboardPageState extends State<ClipboardPage> {
       }
     }
   }
+
+  Future<void> _saveText(String text) async {
+    try {
+      final now = DateTime.now();
+      final fileName = 'clipboard_text_${now.millisecondsSinceEpoch}.txt';
+
+      String? savePath;
+
+      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        final directory = await getDownloadsDirectory();
+        if (directory != null) {
+          savePath = '${directory.path}${Platform.pathSeparator}$fileName';
+        }
+      }
+
+      if (savePath == null) {
+        final directory = await getApplicationDocumentsDirectory();
+        savePath = '${directory.path}${Platform.pathSeparator}$fileName';
+      }
+
+      final file = File(savePath);
+      await file.writeAsString(text);
+
+      if (mounted) {
+        ClipboardUtil.showSnackBar(
+          '文本已保存到: $savePath',
+          duration: const Duration(seconds: 5),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ClipboardUtil.showSnackBar(
+          '保存文本失败: ${e.toString()}',
+          backgroundColor: Colors.red,
+        );
+      }
+    }
+  }
 }
 
 class ClipboardItem {
@@ -458,7 +536,7 @@ class ClipboardItem {
 
   factory ClipboardItem.fromJson(Map<String, dynamic> json) => ClipboardItem(
         text: json['text'] as String?,
-        imageData: json['imageData'] != null 
+        imageData: json['imageData'] != null
             ? base64Decode(json['imageData'] as String)
             : null,
         timestamp: DateTime.parse(json['timestamp'] as String),
@@ -474,4 +552,4 @@ class ClipboardItem {
 
   @override
   int get hashCode => text.hashCode ^ (imageData?.length ?? 0);
-} 
+}

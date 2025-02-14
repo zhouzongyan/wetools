@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "top.caoayu" "\0"
             VALUE "FileDescription", "wetools" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "wetools" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 top.caoayu. All rights reserved." "\0"
             VALUE "OriginalFilename", "wetools.exe" "\0"
             VALUE "ProductName", "wetools" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
