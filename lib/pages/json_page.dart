@@ -1,13 +1,10 @@
 import 'package:code_text_field/code_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:highlight/languages/json.dart' as highlight;
-import 'package:flutter_highlight/themes/monokai-sublime.dart';
-import 'package:flutter_highlight/themes/vs.dart';
 
 class JsonPage extends StatefulWidget {
   const JsonPage({super.key});
@@ -280,7 +277,7 @@ class _JsonPageState extends State<JsonPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
@@ -313,7 +310,7 @@ class _JsonPageState extends State<JsonPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(

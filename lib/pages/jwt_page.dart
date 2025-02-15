@@ -3,6 +3,8 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:wetools/widgets/windows_text_field.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
+import 'package:code_text_field/code_text_field.dart';
+import 'package:highlight/languages/json.dart' as highlight;
 
 class JwtPage extends StatefulWidget {
   const JwtPage({super.key});
@@ -12,19 +14,60 @@ class JwtPage extends StatefulWidget {
 }
 
 class _JwtPageState extends State<JwtPage> {
-  final TextEditingController _encodeController = TextEditingController();
+  late CodeController _encodeController;
   final TextEditingController _decodeController = TextEditingController();
   String _encodeResult = '';
   String _decodeResult = '';
+  String? _errorText;
+  bool _isDarkMode = false;
 
   // 用于测试的密钥，实际使用时应该是可配置的
   final String _secretKey = 'wetools';
+
+  @override
+  void initState() {
+    super.initState();
+    _encodeController = CodeController(
+      text: '',
+      language: highlight.json,
+      params: const EditorParams(
+        tabSpaces: 2,
+      ),
+    );
+  }
 
   @override
   void dispose() {
     _encodeController.dispose();
     _decodeController.dispose();
     super.dispose();
+  }
+
+  void _formatJson() {
+    try {
+      final dynamic parsed = jsonDecode(_encodeController.text);
+      final String formatted = const JsonEncoder.withIndent('  ').convert(parsed);
+      setState(() {
+        _encodeController.text = formatted;
+        _errorText = null;
+      });
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          _encodeController.selection = const TextSelection.collapsed(offset: 0);
+          _encodeController.text = _encodeController.text;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('格式化成功'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorText = '格式化失败: JSON 格式不合法';
+      });
+    }
   }
 
   void _encodeJWT() {
@@ -78,6 +121,118 @@ class _JwtPageState extends State<JwtPage> {
     }
   }
 
+  Widget _buildEditor() {
+    _isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = _isDarkMode ? Colors.grey.shade300 : Colors.grey.shade900;
+    final backgroundColor = _isDarkMode ? const Color(0xFF272822) : Colors.white;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: _errorText != null ? Colors.red : Colors.grey.withOpacity(0.3),
+        ),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CodeField(
+              controller: _encodeController,
+              textStyle: TextStyle(
+                fontFamily: 'JetBrainsMono',
+                color: textColor,
+                fontSize: 14,
+              ),
+              lineNumberStyle: LineNumberStyle(
+                textStyle: TextStyle(
+                  color: _isDarkMode ? Colors.grey : Colors.grey.shade600,
+                ),
+              ),
+              background: backgroundColor,
+              minLines: 10,
+              maxLines: null,
+            ),
+          ),
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Row(
+              children: [
+                Material(
+                  color: Colors.transparent,
+                  child: Tooltip(
+                    message: '复制',
+                    preferBelow: false,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () => ClipboardUtil.copyToClipboard(
+                          _encodeController.text, context),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.5),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.copy,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Material(
+                  color: Colors.transparent,
+                  child: Tooltip(
+                    message: '格式化',
+                    preferBelow: false,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: _formatJson,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .outline
+                                .withOpacity(0.5),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.format_align_left,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
@@ -110,13 +265,15 @@ class _JwtPageState extends State<JwtPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        WindowsTextField(
-                          controller: _encodeController,
-                          hintText: '输入要编码的数据（JSON格式）',
-                          maxLines: 5,
-                          keyboardType: TextInputType.multiline,
-                          textInputAction: TextInputAction.newline,
-                        ),
+                        _buildEditor(),
+                        if (_errorText != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              _errorText!,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
                         if (_encodeResult.isNotEmpty) ...[
                           const SizedBox(height: 32),
                           Container(
