@@ -171,6 +171,26 @@ jobs:
       - name: show workspace
         run: tree -L 3 -a --dirsfirst
 
+      - name: Get Release Notes
+        id: release_notes
+        run: |
+          VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+          NOTES=$(awk -v ver="$VERSION" '
+            /^## \[v'$VERSION'\]/ {
+              p=1;
+              next
+            }
+            /^## \[v[0-9]+\.[0-9]+\.[0-9]+\]/ {
+              p=0
+            }
+            p {
+              print
+            }
+          ' CHANGELOG.md)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -179,6 +199,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           release_name: "Release ${{ github.ref_name }}"
+          body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: false
 
