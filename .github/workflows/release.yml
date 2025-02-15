@@ -161,19 +161,32 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: build    # 等待所有构建 Job 完成后再执行
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: show workspace
-        run: tree -L 3 -a --dirsfirst
+      # 临时注释掉构建相关的步骤
+#     - name: Download all artifacts
+#       uses: actions/download-artifact@v4
+#       with:
+#         path: ./artifacts
+
+      - name: Show workspace and files
+        run: |
+          pwd
+          ls -la
+          echo "Current directory contents:"
+          tree -L 3 -a --dirsfirst
+          echo "CHANGELOG.md contents:"
+          cat CHANGELOG.md || echo "CHANGELOG.md not found"
 
       - name: Get Release Notes
         id: release_notes
         run: |
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "Error: CHANGELOG.md not found"
+            exit 1
+          fi
           VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
           NOTES=$(awk -v ver="$VERSION" '
             /^## \[v'$VERSION'\]/ {
@@ -203,15 +216,16 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Assets - Linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/linux/wetools-linux.tar.gz
-          asset_name: wetools-linux.tar.gz
-          asset_content_type: application/gzip
+      # 临时注释掉上传资源的步骤
+#     - name: Upload Release Assets - Linux
+#       uses: actions/upload-release-asset@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       with:
+#         upload_url: ${{ steps.create_release.outputs.upload_url }}
+#         asset_path: ./artifacts/linux/wetools-linux.tar.gz
+#         asset_name: wetools-linux.tar.gz
+#         asset_content_type: application/gzip
 
       - name: Upload Release Assets - Windows
         uses: actions/upload-release-asset@v1
