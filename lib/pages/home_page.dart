@@ -12,6 +12,7 @@ import 'tcp_page.dart';
 import 'ip_page.dart';
 import 'email_page.dart';
 import 'clipboard_page.dart';
+import 'hosts_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -83,6 +84,11 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.content_paste),
       label: Text('剪贴板'),
     ),
+    // 系统工具类
+    NavigationRailDestination(
+      icon: Icon(Icons.dns),
+      label: Text('Hosts'),
+    ),
   ];
 
   final List<({Widget page, String label})> _pages = const [
@@ -104,6 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
     (page: TimePage(), label: '时间'),
     (page: EmailPage(), label: '邮件'),
     (page: ClipboardPage(), label: '剪贴板'),
+    // 系统工具类
+    (page: HostsPage(), label: 'Hosts'),
   ];
 
   @override
