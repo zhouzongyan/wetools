@@ -93,7 +93,7 @@ class _HostsPageState extends State<HostsPage> {
 
       if (Platform.isWindows) {
         final file = File(_hostsPath);
-        final backupFile = File('${_hostsPath}.bak');
+        final backupFile = File('$_hostsPath.bak');
         await file.copy(backupFile.path);
         
         try {
