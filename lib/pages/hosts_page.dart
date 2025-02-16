@@ -53,7 +53,9 @@ class _HostsPageState extends State<HostsPage> {
       if (await file.exists()) {
         final content = await file.readAsString();
         setState(() {
-          _hostsController.text = content;
+          _hostsController.text = content.split('\n').map((line) {
+            return line.replaceAll(RegExp(r'\s+'), ' ');
+          }).join('\n');
         });
       } else {
         setState(() {
@@ -70,72 +72,48 @@ class _HostsPageState extends State<HostsPage> {
 
   Future<void> _saveHostsFile() async {
     if (_isSaving) return;
-
+    
     setState(() {
       _isSaving = true;
       _errorText = null;
     });
 
     try {
+      String content = _hostsController.text.split('\n').map((line) {
+        return line.trim().replaceAll(RegExp(r'\s+'), ' ');
+      }).join('\n');
+
+      if (!content.endsWith('\n')) {
+        content = '$content\n';
+      }
+      
       if (Platform.isWindows) {
-        // 创建临时文件
-        final tempFile = File('${Directory.systemTemp.path}\\hosts_temp');
-        await tempFile.writeAsString(_hostsController.text);
+        content = content.replaceAll('\n', '\r\n');
+      }
 
-        // 创建 PowerShell 脚本
-        final psContent = '''
-\$ErrorActionPreference = "Stop"
-try {
-    # 检查管理员权限
-    \$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if (-not \$isAdmin) {
-        throw "需要管理员权限"
-    }
-
-    # 备份原文件
-    Copy-Item -Path "$_hostsPath" -Destination "${_hostsPath}.bak" -Force
-    
-    # 写入新内容
-    \$content = Get-Content -Path "${tempFile.path}" -Raw
-    Set-Content -Path "$_hostsPath" -Value \$content -Force
-    
-    # 清理文件
-    Remove-Item -Path "${tempFile.path}" -Force
-    Remove-Item -Path "${_hostsPath}.bak" -Force
-} catch {
-    if (Test-Path "${_hostsPath}.bak") {
-        Copy-Item -Path "${_hostsPath}.bak" -Destination "$_hostsPath" -Force
-        Remove-Item -Path "${_hostsPath}.bak" -Force
-    }
-    throw \$_.Exception.Message
-}
-''';
-
-        final psFile = File('${Directory.systemTemp.path}\\update_hosts.ps1');
-        await psFile.writeAsString(psContent);
-
-        // 执行 PowerShell 脚本
-        final process = await Process.run('powershell', [
-          '-Command',
-          'Start-Process powershell -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList "-ExecutionPolicy Bypass -NoProfile -File \'${psFile.path}\'"',
-        ]);
-
-        // 清理临时文件
-        await psFile.delete();
-
-        if (process.exitCode != 0) {
-          LoggerUtil.error('保存hosts文件失败', process.stderr, StackTrace.current);
-          throw Exception('保存失败: ${process.stderr}');
+      if (Platform.isWindows) {
+        final file = File(_hostsPath);
+        final backupFile = File('${_hostsPath}.bak');
+        await file.copy(backupFile.path);
+        
+        try {
+          await file.writeAsString(content);
+          
+          final newContent = await file.readAsString();
+          if (newContent.replaceAll('\r\n', '\n').trim() != content.replaceAll('\r\n', '\n').trim()) {
+            await backupFile.copy(_hostsPath);
+            throw Exception('文件内容验证失败');
+          }
+        } finally {
+          if (await backupFile.exists()) {
+            await backupFile.delete();
+          }
         }
-
-        // 验证文件内容
-        final newContent = await File(_hostsPath).readAsString();
-        if (newContent.trim() != _hostsController.text.trim()) {
-          throw Exception('文件内容验证失败，请重试');
-        }
+        
+        await _loadHostsFile();
       } else {
         final tempFile = File('/tmp/hosts_temp');
-        await tempFile.writeAsString(_hostsController.text);
+        await tempFile.writeAsString(content);
 
         final process = await Process.run('pkexec', [
           'sh',
@@ -160,6 +138,7 @@ try {
       setState(() {
         _errorText = '保存失败: $e';
       });
+      await _loadHostsFile();
     } finally {
       if (mounted) {
         setState(() {
@@ -172,27 +151,11 @@ try {
   Future<void> _checkAdminPrivileges() async {
     if (Platform.isWindows) {
       try {
-        final psContent = '''
-# 检查 hosts 文件的写入权限
-try {
-    \$stream = [System.IO.File]::Open("$_hostsPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite)
-    \$stream.Close()
-    exit 0
-} catch {
-    exit 1
-}
-''';
-        final psFile =
-            File('${Directory.systemTemp.path}\\check_hosts_permission.ps1');
-        await psFile.writeAsString(psContent);
-
-        final process = await Process.run(
-            'powershell', ['-ExecutionPolicy', 'Bypass', '-File', psFile.path]);
-
-        await psFile.delete();
-
+        final testContent = await File(_hostsPath).readAsString();
+        await File(_hostsPath).writeAsString(testContent);
+        
         setState(() {
-          _isAdmin = process.exitCode == 0;
+          _isAdmin = true;
         });
       } catch (e) {
         setState(() {
@@ -217,7 +180,7 @@ try {
             ),
           ),
           const SizedBox(height: 12),
-          if (Platform.isWindows) // 移除 !_isAdmin 条件，始终显示权限状态
+          if (Platform.isWindows)
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 12,
@@ -295,7 +258,6 @@ try {
     );
   }
 
-  // 修改按钮样式的方法
   Widget _buildButton({
     required IconData icon,
     required String label,
@@ -304,7 +266,7 @@ try {
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 36, // 固定高度
+      height: 36,
       child: ElevatedButton.icon(
         icon: showProgress
             ? const SizedBox(
@@ -315,10 +277,10 @@ try {
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : Icon(icon, size: 16), // 统一图标大小
+            : Icon(icon, size: 16),
         label: Text(
           label,
-          style: const TextStyle(fontSize: 13), // 统一字体大小
+          style: const TextStyle(fontSize: 13),
         ),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -335,7 +297,6 @@ try {
   Widget build(BuildContext context) {
     _isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    // 定义编辑器颜色方案
     final editorTheme = {
       'background': _isDarkMode ? Colors.grey[900]! : Colors.grey[50]!,
       'text': _isDarkMode ? Colors.grey[100]! : Colors.grey[900]!,
@@ -389,10 +350,9 @@ try {
             ],
           ),
         ),
-        // 右侧按钮区域
         Container(
-          width: 100, // 减小宽度
-          padding: const EdgeInsets.all(12.0), // 减小内边距
+          width: 100,
+          padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
