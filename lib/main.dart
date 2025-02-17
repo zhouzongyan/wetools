@@ -15,6 +15,8 @@ import 'services/update_service.dart';
 import 'dart:async';
 import 'widgets/update_progress_dialog.dart';
 import 'utils/settings_util.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   // 确保 Flutter 绑定初始化
@@ -143,11 +145,13 @@ class AppFrame extends StatefulWidget {
 
 class _AppFrameState extends State<AppFrame> {
   Timer? _updateCheckTimer;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
     _initUpdateCheck();
+    _loadVersion();
     SettingsUtil.addListener(_initUpdateCheck);
   }
 
@@ -249,6 +253,20 @@ class _AppFrameState extends State<AppFrame> {
     }
   }
 
+  Future<void> _loadVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = packageInfo.version;
+    });
+  }
+
+  Future<void> _openGitHub() async {
+    const url = 'https://github.com/ayuayue/wetools';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -295,6 +313,16 @@ class _AppFrameState extends State<AppFrame> {
                 onTap: () => _showAboutDialog(context),
               ),
             ],
+          ),
+          TextButton(
+            onPressed: _openGitHub,
+            child: Text(
+              'v$_version',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.outline,
+                fontSize: 12,
+              ),
+            ),
           ),
           const Spacer(),
           // IconButton(

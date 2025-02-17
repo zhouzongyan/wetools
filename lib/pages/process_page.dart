@@ -19,6 +19,7 @@ class _ProcessPageState extends State<ProcessPage> {
   String _searchType = '进程名称';
   List<ProcessInfo> _processes = [];
   bool _isLoading = false;
+  bool _isFirstLoad = true;
   String _sortBy = '内存';
   bool _sortAscending = false;
   bool _hasAdminPrivilege = false;
@@ -112,6 +113,17 @@ class _ProcessPageState extends State<ProcessPage> {
         throw Exception('脚本路径未初始化');
       }
 
+      if (_isFirstLoad && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('首次获取进程信息可能需要较长时间，请耐心等待...'),
+            duration: Duration(seconds: 10),
+            backgroundColor: Colors.blue,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
       final result = await Process.run(
         'powershell',
         ['-File', _getScriptPath('get_processes.ps1')],
@@ -138,6 +150,7 @@ class _ProcessPageState extends State<ProcessPage> {
         }).toList();
         _sortProcesses();
         _updateGroupedProcesses();
+        _isFirstLoad = false;
       });
     } catch (e) {
       if (mounted) {
@@ -350,7 +363,7 @@ class _ProcessPageState extends State<ProcessPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '查看和管理系统进程，支持按进程名称或PID搜索',
+                  '查看和管理系统进程，支持按进程名称或PID或端口搜索',
                   style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
