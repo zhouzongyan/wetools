@@ -127,6 +127,9 @@ flutter:
   assets:
     - assets/images/wechat_pay.png
     - assets/images/alipay.png
+    - scripts/get_processes.ps1
+    - scripts/get_process_details.ps1
+    - scripts/get_process_tree.ps1
 
 flutter_launcher_icons:
   android: "launcher_icon"

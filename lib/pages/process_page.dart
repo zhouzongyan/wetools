@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class ProcessPage extends StatefulWidget {
   const ProcessPage({super.key});
@@ -24,11 +27,56 @@ class _ProcessPageState extends State<ProcessPage> {
   String _groupBy = '无';
   Set<String> _selectedProcesses = {};
   Map<String, List<ProcessInfo>> _groupedProcesses = {};
+  String? _scriptsPath;
 
   @override
   void initState() {
     super.initState();
-    _checkAdminPrivilege();
+    _initScripts().then((_) {
+      _checkAdminPrivilege();
+    });
+  }
+
+  Future<void> _initScripts() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      _scriptsPath = path.join(tempDir.path, 'wetools_scripts');
+
+      // 创建脚本目录
+      final scriptDir = Directory(_scriptsPath!);
+      if (!scriptDir.existsSync()) {
+        scriptDir.createSync();
+      }
+
+      // 解压脚本文件
+      await _extractScript('scripts/get_processes.ps1');
+      await _extractScript('scripts/get_process_details.ps1');
+      await _extractScript('scripts/get_process_tree.ps1');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('初始化脚本文件失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _extractScript(String assetPath) async {
+    try {
+      final scriptContent = await rootBundle.loadString(assetPath);
+      final scriptName = path.basename(assetPath);
+      final scriptFile = File(path.join(_scriptsPath!, scriptName));
+      await scriptFile.writeAsString(scriptContent);
+    } catch (e) {
+      throw Exception('提取脚本 $assetPath 失败: $e');
+    }
+  }
+
+  String _getScriptPath(String scriptName) {
+    return path.join(_scriptsPath ?? '', scriptName);
   }
 
   @override
@@ -60,9 +108,13 @@ class _ProcessPageState extends State<ProcessPage> {
     });
 
     try {
+      if (_scriptsPath == null) {
+        throw Exception('脚本路径未初始化');
+      }
+
       final result = await Process.run(
         'powershell',
-        ['-File', 'scripts/get_processes.ps1'],
+        ['-File', _getScriptPath('get_processes.ps1')],
         stdoutEncoding: const SystemEncoding(),
       );
 
@@ -208,7 +260,8 @@ class _ProcessPageState extends State<ProcessPage> {
 
     showDialog(
       context: context,
-      builder: (context) => ProcessDetailsDialog(process: process),
+      builder: (context) =>
+          ProcessDetailsDialog(process: process, scriptsPath: _scriptsPath),
     );
   }
 
@@ -807,10 +860,12 @@ class ProcessInfo {
 
 class ProcessDetailsDialog extends StatefulWidget {
   final ProcessInfo process;
+  final String? scriptsPath;
 
   const ProcessDetailsDialog({
     super.key,
     required this.process,
+    this.scriptsPath,
   });
 
   @override
@@ -822,6 +877,10 @@ class _ProcessDetailsDialogState extends State<ProcessDetailsDialog> {
   String? _treeInfo;
   bool _isLoading = true;
   String? _error;
+
+  String _getScriptPath(String scriptName) {
+    return path.join(widget.scriptsPath ?? '', scriptName);
+  }
 
   @override
   void initState() {
@@ -854,11 +913,15 @@ class _ProcessDetailsDialogState extends State<ProcessDetailsDialog> {
 
   Future<String> _getProcessDetails() async {
     try {
+      if (widget.scriptsPath == null) {
+        throw Exception('脚本路径未初始化');
+      }
+
       final processResult = await Process.run(
         'powershell',
         [
           '-File',
-          'scripts/get_process_details.ps1',
+          _getScriptPath('get_process_details.ps1'),
           '-ProcessId',
           widget.process.pid
         ],
@@ -888,11 +951,15 @@ CPU使用率: ${json['CPU']}%
 
   Future<String> _getProcessTree() async {
     try {
+      if (widget.scriptsPath == null) {
+        throw Exception('脚本路径未初始化');
+      }
+
       final result = await Process.run(
         'powershell',
         [
           '-File',
-          'scripts/get_process_tree.ps1',
+          _getScriptPath('get_process_tree.ps1'),
           '-ProcessId',
           widget.process.pid
         ],
