@@ -395,7 +395,8 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemCount: filteredItems.length,
       itemBuilder: (context, index) {
         final item = filteredItems[index];
-        return _buildClipboardItem(item, inFavorites: false, index: index);
+        final displayIndex = filteredItems.length - index;
+        return _buildClipboardItem(item, inFavorites: false, index: displayIndex - 1);
       },
     );
   }
@@ -415,7 +416,8 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemCount: filteredItems.length,
       itemBuilder: (context, index) {
         final item = filteredItems[index];
-        return _buildClipboardItem(item, inFavorites: true, index: index);
+        final displayIndex = filteredItems.length - index;
+        return _buildClipboardItem(item, inFavorites: true, index: displayIndex - 1);
       },
     );
   }

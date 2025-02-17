@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:flutter/rendering.dart';
 
 class ProcessPage extends StatefulWidget {
   const ProcessPage({super.key});
@@ -13,7 +14,7 @@ class ProcessPage extends StatefulWidget {
   State<ProcessPage> createState() => _ProcessPageState();
 }
 
-class _ProcessPageState extends State<ProcessPage> {
+class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClientMixin {
   final _searchController = TextEditingController();
   String _searchText = '';
   String _searchType = '进程名称';
@@ -29,13 +30,27 @@ class _ProcessPageState extends State<ProcessPage> {
   Set<String> _selectedProcesses = {};
   Map<String, List<ProcessInfo>> _groupedProcesses = {};
   String? _scriptsPath;
+  bool _hasInitialized = false;
+  DateTime? _lastLoadTime;
+  static const _cacheValidDuration = Duration(seconds: 30);  // 缓存有效期30秒
+
+  @override
+  bool get wantKeepAlive => true;  // 保持页面状态
 
   @override
   void initState() {
     super.initState();
-    _initScripts().then((_) {
-      _checkAdminPrivilege();
-    });
+    // 延迟初始化，让页面先显示出来
+    Future.microtask(() => _initializeIfNeeded());
+  }
+
+  Future<void> _initializeIfNeeded() async {
+    if (!_hasInitialized) {
+      await _initScripts();
+      await _checkAdminPrivilege();
+      await _refreshProcesses();  // 只在这里调用一次
+      _hasInitialized = true;
+    }
   }
 
   Future<void> _initScripts() async {
@@ -94,7 +109,6 @@ class _ProcessPageState extends State<ProcessPage> {
         setState(() {
           _hasAdminPrivilege = result.exitCode == 0;
         });
-        _refreshProcesses();
       }
     } catch (e) {
       setState(() {
@@ -104,6 +118,13 @@ class _ProcessPageState extends State<ProcessPage> {
   }
 
   Future<void> _refreshProcesses() async {
+    // 检查缓存是否有效
+    if (_lastLoadTime != null && 
+        DateTime.now().difference(_lastLoadTime!) < _cacheValidDuration &&
+        _processes.isNotEmpty) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -116,8 +137,8 @@ class _ProcessPageState extends State<ProcessPage> {
       if (_isFirstLoad && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('首次获取进程信息可能需要较长时间，请耐心等待...'),
-            duration: Duration(seconds: 10),
+            content: Text('正在加载进程信息...'),
+            duration: Duration(seconds: 2),
             backgroundColor: Colors.blue,
             behavior: SnackBarBehavior.floating,
           ),
@@ -151,6 +172,7 @@ class _ProcessPageState extends State<ProcessPage> {
         _sortProcesses();
         _updateGroupedProcesses();
         _isFirstLoad = false;
+        _lastLoadTime = DateTime.now();  // 更新最后加载时间
       });
     } catch (e) {
       if (mounted) {
@@ -159,7 +181,6 @@ class _ProcessPageState extends State<ProcessPage> {
             content: Text('获取进程列表失败: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(8),
           ),
         );
       }
@@ -271,15 +292,161 @@ class _ProcessPageState extends State<ProcessPage> {
   Future<void> _showProcessDetails(ProcessInfo process) async {
     if (!mounted) return;
 
+    // 先显示加载动画
     showDialog(
       context: context,
-      builder: (context) =>
-          ProcessDetailsDialog(process: process, scriptsPath: _scriptsPath),
+      barrierDismissible: false,
+      builder: (context) => FutureBuilder(
+        // 同时加载所有需要的数据
+        future: Future.wait<dynamic>([
+          process.loadPorts().then((_) => process.ports),  // 转换为返回 String
+          _getProcessDetails(process),
+          _getProcessTree(process),
+        ]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            // 直接返回完整的对话框
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                  const SizedBox(width: 8),
+                  Text('进程详情: ${process.name}'),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const TabBar(
+                        tabs: [
+                          Tab(text: '基本信息'),
+                          Tab(text: '高级信息'),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 300,
+                        child: TabBarView(
+                          children: [
+                            SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDetailItem('进程名称', process.name),
+                                  _buildDetailItem('PID', process.pid),
+                                  _buildDetailItem('内存使用', process.memory),
+                                  const Divider(),
+                                  SelectableText(snapshot.data?[1] ?? ''),
+                                ],
+                              ),
+                            ),
+                            SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('进程树信息:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  SelectableText(snapshot.data?[2] ?? ''),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('关闭'),
+                ),
+              ],
+            );
+          }
+          // 显示加载动画
+          return AlertDialog(
+            content: const SizedBox(
+              height: 100,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('正在加载进程信息...'),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
+  }
+
+  Future<String> _getProcessDetails(ProcessInfo process) async {
+    try {
+      final result = await Process.run(
+        'powershell',
+        ['-File', _getScriptPath('get_process_details.ps1'), process.pid],
+        stdoutEncoding: const SystemEncoding(),
+      );
+
+      if (result.exitCode != 0) {
+        throw result.stderr;
+      }
+
+      final info = json.decode(result.stdout);
+      return '''
+CPU使用率: ${info['CPU']}
+线程数: ${info['ThreadCount']}
+句柄数: ${info['HandleCount']}
+工作集: ${info['WorkingSet']} MB
+虚拟内存: ${info['VirtualMemory']} MB
+优先级: ${info['Priority']}
+启动时间: ${info['StartTime']}
+路径: ${info['Path']}
+端口: ${process.ports}
+命令行: ${info['CommandLine']}
+''';
+    } catch (e) {
+      return '获取进程详情失败: $e';
+    }
+  }
+
+  Future<String> _getProcessTree(ProcessInfo process) async {
+    try {
+      final result = await Process.run(
+        'powershell',
+        ['-File', _getScriptPath('get_process_tree.ps1'), process.pid],
+        stdoutEncoding: const SystemEncoding(),
+      );
+
+      if (result.exitCode != 0) {
+        throw result.stderr;
+      }
+
+      final info = json.decode(result.stdout);
+      return '''
+进程ID: ${info['ProcessId']}
+父进程ID: ${info['ParentProcessId']}
+父进程名称: ${info['ParentName']}
+命令行: ${info['CommandLine']}
+''';
+    } catch (e) {
+      return '获取进程树信息失败: $e';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);  // 需要调用 super.build
+    
     final filteredProcesses = _getFilteredProcesses();
 
     Widget? warningBanner;
@@ -543,6 +710,7 @@ class _ProcessPageState extends State<ProcessPage> {
 
   List<ProcessInfo> _getFilteredProcesses() {
     if (_searchText.isEmpty) return _processes;
+
     return _processes.where((process) {
       switch (_searchType) {
         case '进程名称':
@@ -550,7 +718,7 @@ class _ProcessPageState extends State<ProcessPage> {
         case 'PID':
           return process.pid.contains(_searchText);
         case '端口号':
-          return process.ports.contains(_searchText);
+          return process.ports.contains(_searchText);  // 使用当前的端口值
         default:
           return false;
       }
@@ -692,7 +860,7 @@ class _ProcessPageState extends State<ProcessPage> {
         return ListTile(
           leading: Checkbox(
             value: _selectedProcesses.contains(process.pid),
-            onChanged: (value) {
+            onChanged: (bool? value) {
               setState(() {
                 if (value == true) {
                   _selectedProcesses.add(process.pid);
@@ -703,22 +871,33 @@ class _ProcessPageState extends State<ProcessPage> {
             },
           ),
           title: Text(process.name),
-          subtitle: Text(
-              'PID: ${process.pid}  内存: ${process.memory}  端口: ${process.ports}'),
+          subtitle: Row(
+            children: [
+              Text('PID: ${process.pid}'),
+              const SizedBox(width: 16),
+              Text('内存: ${process.memory}'),
+              if (process.ports != 'None') ...[
+                const SizedBox(width: 16),
+                Text('端口: ${process.ports}'),
+              ],
+            ],
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 icon: const Icon(Icons.info_outline),
                 onPressed: () => _showProcessDetails(process),
-                tooltip: '查看详情',
+                tooltip: '详情',
               ),
               IconButton(
                 icon: Icon(
                   Icons.stop_circle_outlined,
                   color: Colors.red[700],
                 ),
-                onPressed: () => _killProcess(process.pid),
+                onPressed: !_hasAdminPrivilege
+                    ? null
+                    : () => _killProcess(process.pid),
                 tooltip: '终止进程',
               ),
             ],
@@ -853,390 +1032,6 @@ class _ProcessPageState extends State<ProcessPage> {
   void _stopAutoRefresh() {
     _refreshTimer?.cancel();
   }
-}
-
-class ProcessInfo {
-  final String name;
-  final String pid;
-  final String memory;
-  final String rawMemory;
-  final String ports;
-
-  ProcessInfo({
-    required this.name,
-    required this.pid,
-    required this.memory,
-    required this.rawMemory,
-    this.ports = 'None',
-  });
-}
-
-class ProcessDetailsDialog extends StatefulWidget {
-  final ProcessInfo process;
-  final String? scriptsPath;
-
-  const ProcessDetailsDialog({
-    super.key,
-    required this.process,
-    this.scriptsPath,
-  });
-
-  @override
-  State<ProcessDetailsDialog> createState() => _ProcessDetailsDialogState();
-}
-
-class _ProcessDetailsDialogState extends State<ProcessDetailsDialog> {
-  String? _details;
-  String? _treeInfo;
-  bool _isLoading = true;
-  String? _error;
-
-  String _getScriptPath(String scriptName) {
-    return path.join(widget.scriptsPath ?? '', scriptName);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProcessDetails();
-  }
-
-  Future<void> _loadProcessDetails() async {
-    try {
-      final results = await Future.wait([
-        _getProcessDetails(),
-        _getProcessTree(),
-      ]);
-
-      if (!mounted) return;
-
-      setState(() {
-        _details = results[0] as String;
-        _treeInfo = results[1] as String;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<String> _getProcessDetails() async {
-    try {
-      if (widget.scriptsPath == null) {
-        throw Exception('脚本路径未初始化');
-      }
-
-      final processResult = await Process.run(
-        'powershell',
-        [
-          '-File',
-          _getScriptPath('get_process_details.ps1'),
-          '-ProcessId',
-          widget.process.pid
-        ],
-        stdoutEncoding: const SystemEncoding(),
-      );
-
-      if (processResult.exitCode != 0) {
-        throw processResult.stderr;
-      }
-
-      final json = jsonDecode(processResult.stdout.toString());
-      return '''
-CPU使用率: ${json['CPU']}%
-线程数: ${json['ThreadCount']}
-句柄数: ${json['HandleCount']}
-工作集: ${json['WorkingSet']} MB
-虚拟内存: ${json['VirtualMemory']} MB
-优先级: ${json['Priority']}
-启动时间: ${json['StartTime']}
-路径: ${json['Path']}
-端口: ${widget.process.ports}
-''';
-    } catch (e) {
-      return '获取进程详情失败: $e';
-    }
-  }
-
-  Future<String> _getProcessTree() async {
-    try {
-      if (widget.scriptsPath == null) {
-        throw Exception('脚本路径未初始化');
-      }
-
-      final result = await Process.run(
-        'powershell',
-        [
-          '-File',
-          _getScriptPath('get_process_tree.ps1'),
-          '-ProcessId',
-          widget.process.pid
-        ],
-        stdoutEncoding: const SystemEncoding(),
-      );
-
-      if (result.exitCode != 0) {
-        throw result.stderr;
-      }
-
-      final json = jsonDecode(result.stdout.toString());
-      return '''
-进程ID: ${json['ProcessId']}
-父进程ID: ${json['ParentProcessId']}
-父进程名称: ${json['ParentName']}
-命令行: ${json['CommandLine']}
-''';
-    } catch (e) {
-      return '获取进程树信息失败: $e';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
-          const SizedBox(width: 8),
-          Text('进程详情: ${widget.process.name}'),
-        ],
-      ),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: _isLoading
-            ? const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('正在加载进程详情...'),
-                  ],
-                ),
-              )
-            : _error != null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.red,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '加载失败: $_error',
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                : DefaultTabController(
-                    length: 2,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const TabBar(
-                          tabs: [
-                            Tab(text: '基本信息'),
-                            Tab(text: '高级信息'),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 300,
-                          child: TabBarView(
-                            children: [
-                              SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildDetailItem(
-                                        '进程名称', widget.process.name),
-                                    _buildDetailItem('PID', widget.process.pid),
-                                    _buildDetailItem(
-                                        '内存使用', widget.process.memory),
-                                    const Divider(),
-                                    SelectableText(_details ?? ''),
-                                  ],
-                                ),
-                              ),
-                              SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('进程树信息:',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 8),
-                                    SelectableText(_treeInfo ?? ''),
-                                    const Divider(),
-                                    const Text('进程操作:',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 8),
-                                    Wrap(
-                                      spacing: 8,
-                                      children: [
-                                        ElevatedButton.icon(
-                                          icon: const Icon(Icons.speed),
-                                          label: const Text('优先级'),
-                                          onPressed: () =>
-                                              _showPriorityDialog(context),
-                                        ),
-                                        ElevatedButton.icon(
-                                          icon: const Icon(Icons.pause),
-                                          label: const Text('暂停'),
-                                          onPressed: () =>
-                                              _suspendProcess(context),
-                                        ),
-                                        ElevatedButton.icon(
-                                          icon: const Icon(Icons.play_arrow),
-                                          label: const Text('恢复'),
-                                          onPressed: () =>
-                                              _resumeProcess(context),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('关闭'),
-        ),
-      ],
-    );
-  }
-
-  void _showPriorityDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('设置进程优先级'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('实时'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('256');
-              },
-            ),
-            ListTile(
-              title: const Text('高'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('128');
-              },
-            ),
-            ListTile(
-              title: const Text('高于标准'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('32768');
-              },
-            ),
-            ListTile(
-              title: const Text('标准'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('32');
-              },
-            ),
-            ListTile(
-              title: const Text('低于标准'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('16384');
-              },
-            ),
-            ListTile(
-              title: const Text('低'),
-              onTap: () {
-                Navigator.pop(context);
-                _setPriority('64');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _setPriority(String priority) async {
-    try {
-      await Process.run('wmic', [
-        'process',
-        'where',
-        'ProcessId=${widget.process.pid}',
-        'CALL',
-        'setpriority',
-        priority
-      ]);
-      _loadProcessDetails();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('设置优先级失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _suspendProcess(BuildContext context) async {
-    try {
-      await Process.run('powershell', [
-        '-Command',
-        'Get-Process -Id ${widget.process.pid} | ForEach-Object { \$_.Suspend() }'
-      ]);
-      _loadProcessDetails();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('暂停进程失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _resumeProcess(BuildContext context) async {
-    try {
-      await Process.run('powershell', [
-        '-Command',
-        'Get-Process -Id ${widget.process.pid} | ForEach-Object { \$_.Resume() }'
-      ]);
-      _loadProcessDetails();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('恢复进程失败: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   Widget _buildDetailItem(String label, String value) {
     return Padding(
@@ -1257,5 +1052,43 @@ CPU使用率: ${json['CPU']}%
         ],
       ),
     );
+  }
+}
+
+class ProcessInfo {
+  final String name;
+  final String pid;
+  final String memory;
+  final String rawMemory;
+  String ports;  // 移除 final 关键字
+
+  ProcessInfo({
+    required this.name,
+    required this.pid,
+    required this.memory,
+    required this.rawMemory,
+    this.ports = 'None',
+  });
+
+  // 加载端口信息的方法
+  Future<void> loadPorts() async {
+    if (ports != 'None') return;  // 如果已加载则跳过
+    
+    try {
+      final result = await Process.run('powershell', [
+        '-Command',
+        '''
+        \$ports = Get-NetTCPConnection -OwningProcess $pid -ErrorAction SilentlyContinue | 
+                 Select-Object -ExpandProperty LocalPort
+        if (\$ports) { \$ports -join ', ' } else { 'None' }
+        '''
+      ]);
+      
+      if (result.exitCode == 0) {
+        ports = result.stdout.trim();
+      }
+    } catch (e) {
+      ports = 'None';
+    }
   }
 }
