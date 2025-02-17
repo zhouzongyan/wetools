@@ -314,16 +314,6 @@ class _AppFrameState extends State<AppFrame> {
               ),
             ],
           ),
-          TextButton(
-            onPressed: _openGitHub,
-            child: Text(
-              'v$_version',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.outline,
-                fontSize: 12,
-              ),
-            ),
-          ),
           const Spacer(),
           // IconButton(
           //   icon: const Icon(Icons.remove, size: 18),

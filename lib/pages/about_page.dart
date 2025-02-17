@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -66,9 +67,19 @@ class AboutPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
+                          FutureBuilder<PackageInfo>(
+                            future: PackageInfo.fromPlatform(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return Text('版本: v${snapshot.data!.version}');
+                              }
+                              return const Text('版本: 加载中...');
+                            },
+                          ),
+                          const SizedBox(height: 8),
                           TextButton(
-                            onPressed: () =>
-                                _launchUrl('https://github.com/ayuayue/wetools'),
+                            onPressed: () => _launchUrl(
+                                'https://github.com/ayuayue/wetools'),
                             child: const Text(
                               'GitHub 仓库',
                               style: TextStyle(
@@ -78,8 +89,7 @@ class AboutPage extends StatelessWidget {
                             ),
                           ),
                           TextButton(
-                            onPressed: () =>
-                                _launchUrl('https://caoayu.top'),
+                            onPressed: () => _launchUrl('https://caoayu.top'),
                             child: const Text(
                               '作者博客',
                               style: TextStyle(

@@ -459,6 +459,58 @@ class _ClipboardPageState extends State<ClipboardPage> {
           item.timestamp.toString(),
           style: Theme.of(context).textTheme.bodySmall,
         ),
+        onTap: () {
+          if (!item.isImage && item.text != null) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Row(
+                  children: [
+                    const Icon(Icons.content_copy),
+                    const SizedBox(width: 8),
+                    const Text('剪贴板内容详情'),
+                    const Spacer(),
+                    Text(
+                      '${item.text!.length} 字符',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SelectableText(item.text!),
+                        const SizedBox(height: 16),
+                        Text(
+                          '创建时间: ${item.timestamp.toString()}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('关闭'),
+                  ),
+                  FilledButton.icon(
+                    icon: const Icon(Icons.copy),
+                    label: const Text('复制'),
+                    onPressed: () {
+                      ClipboardUtil.copyToClipboard(item.text!, context);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+        },
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
