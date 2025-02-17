@@ -224,7 +224,7 @@ class AppFrame extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
@@ -237,13 +237,16 @@ class AppFrame extends StatelessWidget {
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
-          child: const AboutPage(),
+      builder: (context) => ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
+            child: const AboutPage(),
+          ),
         ),
       ),
     );
@@ -254,7 +257,7 @@ class AppFrame extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800, maxHeight: 600),
