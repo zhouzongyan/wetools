@@ -33,7 +33,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   // 添加更新设置相关变量
   bool _autoUpdateCheck = SettingsUtil.defaultAutoUpdateCheck;
-  int _updateCheckInterval = SettingsUtil.defaultUpdateCheckInterval;
   final _updateCheckIntervalController = TextEditingController(
     text: SettingsUtil.defaultUpdateCheckInterval.toString(),
   );
@@ -89,7 +88,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final interval = await SettingsUtil.getUpdateCheckInterval();
     setState(() {
       _autoUpdateCheck = autoCheck;
-      _updateCheckInterval = interval;
       _updateCheckIntervalController.text = interval.toString();
     });
   }
@@ -330,7 +328,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       if (intValue != null && intValue > 0) {
                         await SettingsUtil.setUpdateCheckInterval(intValue);
                         setState(() {
-                          _updateCheckInterval = intValue;
                         });
                         SettingsUtil.notifySettingsChanged();
                       }

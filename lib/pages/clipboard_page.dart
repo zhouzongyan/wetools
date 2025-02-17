@@ -395,7 +395,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemCount: filteredItems.length,
       itemBuilder: (context, index) {
         final item = filteredItems[index];
-        return _buildClipboardItem(item, inFavorites: false);
+        return _buildClipboardItem(item, inFavorites: false, index: index);
       },
     );
   }
@@ -415,17 +415,35 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemCount: filteredItems.length,
       itemBuilder: (context, index) {
         final item = filteredItems[index];
-        return _buildClipboardItem(item, inFavorites: true);
+        return _buildClipboardItem(item, inFavorites: true, index: index);
       },
     );
   }
 
-  Widget _buildClipboardItem(ClipboardItem item, {required bool inFavorites}) {
+  Widget _buildClipboardItem(ClipboardItem item,
+      {required bool inFavorites, required int index}) {
     final isFavorited = _favorites.contains(item);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
+        leading: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Center(
+            child: Text(
+              '${index + 1}',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
         title: item.isImage
             ? Image.memory(
                 item.imageData!,
@@ -433,7 +451,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
                 fit: BoxFit.contain,
               )
             : Text(
-                item.text ?? '', // 添加空字符串作为默认值
+                item.text ?? '',
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -459,7 +477,7 @@ class _ClipboardPageState extends State<ClipboardPage> {
               },
               tooltip: isFavorited ? '取消收藏' : '收藏',
             ),
-            if (!item.isImage) // 只有文本才显示复制按钮
+            if (!item.isImage)
               IconButton(
                 icon: const Icon(Icons.copy),
                 onPressed: () {

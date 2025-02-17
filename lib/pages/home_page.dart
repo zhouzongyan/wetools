@@ -5,6 +5,7 @@ import 'package:wetools/pages/json_page.dart';
 import 'package:wetools/pages/jwt_page.dart';
 import 'package:wetools/pages/text_page.dart';
 import 'package:wetools/pages/url_page.dart';
+import 'package:wetools/pages/process_page.dart';
 import 'time_page.dart';
 import 'translate_page.dart';
 import 'http_page.dart';
@@ -86,6 +87,10 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
     // 系统工具类
     NavigationRailDestination(
+      icon: Icon(Icons.memory),
+      label: Text('进程'),
+    ),
+    NavigationRailDestination(
       icon: Icon(Icons.dns),
       label: Text('Hosts'),
     ),
@@ -111,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     (page: EmailPage(), label: '邮件'),
     (page: ClipboardPage(), label: '剪贴板'),
     // 系统工具类
+    (page: ProcessPage(), label: '进程'),
     (page: HostsPage(), label: 'Hosts'),
   ];
 
