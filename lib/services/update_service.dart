@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:archive/archive.dart';
+import 'package:path/path.dart' as path;
 
 class UpdateService {
   static const String _githubApi =
@@ -93,10 +95,131 @@ class UpdateService {
     return 0;
   }
 
-  static Future<void> downloadUpdate(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+  static Future<({bool success, String message})> downloadAndUpdate(
+      String url, void Function(double) onProgress) async {
+    try {
+      // 获取临时目录
+      final tempDir = await getTemporaryDirectory();
+      final downloadDir = Directory(path.join(tempDir.path, 'update'));
+      if (!downloadDir.existsSync()) {
+        downloadDir.createSync(recursive: true);
+      }
+
+      // 下载文件
+      final zipPath = path.join(downloadDir.path, 'update.zip');
+      final file = File(zipPath);
+
+      // 发起 HTTP 请求
+      final client = http.Client();
+      try {
+        final request = http.Request('GET', Uri.parse(url));
+        final response = await client.send(request);
+        final contentLength = response.contentLength ?? 0;
+        var receivedBytes = 0;
+
+        final sink = file.openWrite();
+        await response.stream.listen(
+          (chunk) {
+            sink.add(chunk);
+            receivedBytes += chunk.length;
+            if (contentLength > 0) {
+              onProgress(receivedBytes / contentLength);
+            }
+          },
+          onDone: () async {
+            await sink.flush();
+            await sink.close();
+          },
+        ).asFuture();
+      } finally {
+        client.close();
+      }
+
+      // 解压文件
+      final bytes = await file.readAsBytes();
+      final archive = ZipDecoder().decodeBytes(bytes);
+      final extractPath = path.join(downloadDir.path, 'extracted');
+
+      // 清理旧的解压目录
+      final extractDir = Directory(extractPath);
+      if (extractDir.existsSync()) {
+        extractDir.deleteSync(recursive: true);
+      }
+      extractDir.createSync(recursive: true);
+
+      // 解压文件
+      for (final file in archive) {
+        final filename = file.name;
+        if (file.isFile) {
+          final data = file.content as List<int>;
+          File(path.join(extractPath, filename))
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(data);
+        } else {
+          Directory(path.join(extractPath, filename))
+              .createSync(recursive: true);
+        }
+      }
+
+      // 获取当前应用路径
+      final currentExePath = Platform.resolvedExecutable;
+      final currentDir = path.dirname(currentExePath);
+
+      // 创建更新脚本
+      String scriptContent;
+      String scriptPath;
+
+      if (Platform.isWindows) {
+        scriptContent = '''
+@echo off
+timeout /t 2 /nobreak
+xcopy /s /y "${extractPath.replaceAll('/', '\\\\')}\\*" "${currentDir.replaceAll('/', '\\\\')}\\*"
+start "" "${currentExePath.replaceAll('/', '\\\\')}"
+del "%~f0"
+''';
+        scriptPath = path.join(downloadDir.path, 'update.bat');
+      } else {
+        scriptContent = '''
+#!/bin/bash
+sleep 2
+cp -R "${extractPath}/"* "${currentDir}/"
+"${currentExePath}" &
+rm "\$0"
+''';
+        scriptPath = path.join(downloadDir.path, 'update.sh');
+      }
+
+      final scriptFile = File(scriptPath);
+      await scriptFile.writeAsString(scriptContent);
+
+      if (!Platform.isWindows) {
+        // 设置脚本可执行权限
+        await Process.run('chmod', ['+x', scriptPath]);
+      }
+
+      return (success: true, message: '下载完成，准备更新');
+    } catch (e) {
+      return (success: false, message: '更新失败: $e');
+    }
+  }
+
+  static Future<void> applyUpdate() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final scriptPath = path.join(tempDir.path, 'update',
+          Platform.isWindows ? 'update.bat' : 'update.sh');
+
+      // 运行更新脚本
+      if (Platform.isWindows) {
+        await Process.start('cmd', ['/c', 'start', '/b', scriptPath]);
+      } else {
+        await Process.start('bash', [scriptPath]);
+      }
+
+      // 退出当前应用
+      exit(0);
+    } catch (e) {
+      rethrow;
     }
   }
 }

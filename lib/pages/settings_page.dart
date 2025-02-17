@@ -6,6 +6,7 @@ import '../services/update_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../services/proxy_service.dart';
 import '../utils/settings_util.dart';
+import '../widgets/update_progress_dialog.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -30,18 +31,27 @@ class _SettingsPageState extends State<SettingsPage> {
   int _tempCleanupInterval = SettingsUtil.defaultCleanupInterval;
   bool _hasUnsavedChanges = false;
 
+  // 添加更新设置相关变量
+  bool _autoUpdateCheck = SettingsUtil.defaultAutoUpdateCheck;
+  int _updateCheckInterval = SettingsUtil.defaultUpdateCheckInterval;
+  final _updateCheckIntervalController = TextEditingController(
+    text: SettingsUtil.defaultUpdateCheckInterval.toString(),
+  );
+
   @override
   void initState() {
     super.initState();
     _loadVersion();
     _loadProxySettings();
     _loadClipboardSettings();
+    _loadUpdateSettings();
   }
 
   @override
   void dispose() {
     _proxyHostController.dispose();
     _proxyPortController.dispose();
+    _updateCheckIntervalController.dispose();
     super.dispose();
   }
 
@@ -74,6 +84,16 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {});
   }
 
+  Future<void> _loadUpdateSettings() async {
+    final autoCheck = await SettingsUtil.getAutoUpdateCheck();
+    final interval = await SettingsUtil.getUpdateCheckInterval();
+    setState(() {
+      _autoUpdateCheck = autoCheck;
+      _updateCheckInterval = interval;
+      _updateCheckIntervalController.text = interval.toString();
+    });
+  }
+
   Future<void> _saveClipboardSettings() async {
     await SettingsUtil.setMaxHistoryItems(_tempMaxHistoryItems);
     await SettingsUtil.setMaxFavoriteItems(_tempMaxFavoriteItems);
@@ -98,6 +118,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _checkUpdate(BuildContext context) async {
+    if (!mounted) return;
+    final buildContext = context;
+
     setState(() {
       _checkingUpdate = true;
     });
@@ -107,8 +130,9 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
 
       if (result.hasUpdate) {
-        showDialog(
-          context: context,
+        if (!mounted) return;
+        final bool? shouldUpdate = await showDialog<bool>(
+          context: buildContext,
           builder: (context) => AlertDialog(
             title: const Text('发现新版本'),
             content: Column(
@@ -127,20 +151,47 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, false),
                 child: const Text('稍后再说'),
               ),
               if (result.downloadUrl != null)
                 FilledButton(
-                  onPressed: () {
-                    UpdateService.downloadUpdate(result.downloadUrl!);
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context, true),
                   child: const Text('立即更新'),
                 ),
             ],
           ),
         );
+
+        if (shouldUpdate == true && mounted) {
+          final bool? confirm = await showDialog<bool>(
+            context: buildContext,
+            builder: (context) => AlertDialog(
+              title: const Text('确认更新'),
+              content: const Text('更新将会覆盖当前版本并重启应用，是否继续？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('确认'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true && mounted) {
+            showDialog(
+              context: buildContext,
+              barrierDismissible: false,
+              builder: (context) => UpdateProgressDialog(
+                downloadUrl: result.downloadUrl!,
+              ),
+            );
+          }
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -237,6 +288,62 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildUpdateSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        Text(
+          '自动更新',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('自动检查更新'),
+          subtitle: const Text('定期检查新版本'),
+          value: _autoUpdateCheck,
+          onChanged: (bool value) async {
+            await SettingsUtil.setAutoUpdateCheck(value);
+            setState(() {
+              _autoUpdateCheck = value;
+            });
+            SettingsUtil.notifySettingsChanged();
+          },
+        ),
+        if (_autoUpdateCheck)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Expanded(
+                  flex: 2,
+                  child: Text('检查间隔（小时）'),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 3,
+                  child: WindowsTextField(
+                    controller: _updateCheckIntervalController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) async {
+                      final intValue = int.tryParse(value);
+                      if (intValue != null && intValue > 0) {
+                        await SettingsUtil.setUpdateCheckInterval(intValue);
+                        setState(() {
+                          _updateCheckInterval = intValue;
+                        });
+                        SettingsUtil.notifySettingsChanged();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
@@ -315,6 +422,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                     _buildProxySettings(),
+                    _buildUpdateSettings(),
                     const Divider(),
                     Text(
                       '剪贴板',
@@ -391,29 +499,29 @@ class _SettingsPageState extends State<SettingsPage> {
                         ],
                       ),
                     ),
-                    const Divider(),
-                    Text(
-                      '关于',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    ListTile(
-                      title: const Text('检查更新'),
-                      subtitle: SelectableText('当前版本: $_currentVersion'),
-                      trailing: _checkingUpdate
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : TextButton(
-                              onPressed: () => _checkUpdate(context),
-                              child: const Text('检查更新'),
-                            ),
-                    ),
                   ],
                 ),
               ),
+            ),
+            const Divider(),
+            Text(
+              '关于',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: const Text('检查更新'),
+              subtitle: SelectableText('当前版本: $_currentVersion'),
+              trailing: _checkingUpdate
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : TextButton(
+                      onPressed: () => _checkUpdate(context),
+                      child: const Text('检查更新'),
+                    ),
             ),
           ],
         ),

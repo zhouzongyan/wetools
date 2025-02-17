@@ -11,6 +11,10 @@ import 'utils/logger_util.dart';
 import 'package:provider/provider.dart';
 import 'utils/theme_util.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
+import 'services/update_service.dart';
+import 'dart:async';
+import 'widgets/update_progress_dialog.dart';
+import 'utils/settings_util.dart';
 
 void main() async {
   // 确保 Flutter 绑定初始化
@@ -38,14 +42,14 @@ void main() async {
 
   // 初始化窗口管理器
   await windowManager.ensureInitialized();
-  
+
   // 配置窗口
   await windowManager.waitUntilReadyToShow(null, () async {
     // 设置窗口大小和其他属性
     await windowManager.setSize(const Size(1280, 800));
     await windowManager.setMinimumSize(const Size(800, 600));
     await windowManager.center();
-    
+
     // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
     await windowManager.setPreventClose(false);
     await windowManager.setSkipTaskbar(false);
@@ -53,7 +57,7 @@ void main() async {
       TitleBarStyle.normal,
       windowButtonVisibility: true,
     );
-    
+
     await windowManager.show();
     await windowManager.focus();
   });
@@ -130,8 +134,120 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AppFrame extends StatelessWidget {
+class AppFrame extends StatefulWidget {
   const AppFrame({super.key});
+
+  @override
+  State<AppFrame> createState() => _AppFrameState();
+}
+
+class _AppFrameState extends State<AppFrame> {
+  Timer? _updateCheckTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _initUpdateCheck();
+    SettingsUtil.addListener(_initUpdateCheck);
+  }
+
+  @override
+  void dispose() {
+    _updateCheckTimer?.cancel();
+    SettingsUtil.removeListener(_initUpdateCheck);
+    super.dispose();
+  }
+
+  Future<void> _initUpdateCheck() async {
+    _updateCheckTimer?.cancel();
+
+    final autoCheck = await SettingsUtil.getAutoUpdateCheck();
+    if (!autoCheck) return;
+
+    final interval = await SettingsUtil.getUpdateCheckInterval();
+    // 启动时检查更新
+    _checkUpdateSilently();
+    // 设置定时检查
+    _updateCheckTimer = Timer.periodic(
+      Duration(hours: interval),
+      (_) => _checkUpdateSilently(),
+    );
+  }
+
+  Future<void> _checkUpdateSilently() async {
+    try {
+      final result = await UpdateService.checkUpdate();
+      if (!mounted) return;
+
+      if (result.hasUpdate) {
+        if (!mounted) return;
+        final bool? shouldUpdate = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('发现新版本'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('最新版本: ${result.latestVersion}'),
+                const SizedBox(height: 8),
+                if (result.releaseNotes != null) ...[
+                  const Text('更新内容:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(result.releaseNotes!),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('稍后再说'),
+              ),
+              if (result.downloadUrl != null)
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('立即更新'),
+                ),
+            ],
+          ),
+        );
+
+        if (shouldUpdate == true && mounted) {
+          final bool? confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('确认更新'),
+              content: const Text('更新将会覆盖当前版本并重启应用，是否继续？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('确认'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true && mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => UpdateProgressDialog(
+                downloadUrl: result.downloadUrl!,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      // 静默检查更新失败时不显示错误
+      debugPrint('静默检查更新失败: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

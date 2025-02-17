@@ -5,12 +5,16 @@ class SettingsUtil {
   static const String _maxFavoriteItemsKey = 'clipboard_max_favorites';
   static const String _maxTextLengthKey = 'clipboard_max_text_length';
   static const String _cleanupIntervalKey = 'clipboard_cleanup_interval';
+  static const String _updateCheckIntervalKey = 'update_check_interval';
+  static const String _autoUpdateCheckKey = 'auto_update_check';
 
   // 默认值
   static const int defaultMaxHistoryItems = 100;
   static const int defaultMaxFavoriteItems = 50;
   static const int defaultMaxTextLength = 10000;
   static const int defaultCleanupInterval = 24; // 小时
+  static const int defaultUpdateCheckInterval = 12; // 小时
+  static const bool defaultAutoUpdateCheck = true;
 
   // 设置变更监听器列表
   static final List<Function()> _listeners = [];
@@ -52,6 +56,16 @@ class SettingsUtil {
     return prefs.getInt(_cleanupIntervalKey) ?? defaultCleanupInterval;
   }
 
+  static Future<int> getUpdateCheckInterval() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_updateCheckIntervalKey) ?? defaultUpdateCheckInterval;
+  }
+
+  static Future<bool> getAutoUpdateCheck() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_autoUpdateCheckKey) ?? defaultAutoUpdateCheck;
+  }
+
   static Future<void> setMaxHistoryItems(int value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_maxHistoryItemsKey, value);
@@ -70,5 +84,15 @@ class SettingsUtil {
   static Future<void> setCleanupInterval(int value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_cleanupIntervalKey, value);
+  }
+
+  static Future<void> setUpdateCheckInterval(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_updateCheckIntervalKey, value);
+  }
+
+  static Future<void> setAutoUpdateCheck(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_autoUpdateCheckKey, value);
   }
 }

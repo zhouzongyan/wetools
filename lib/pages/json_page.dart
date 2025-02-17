@@ -2,8 +2,6 @@ import 'package:code_text_field/code_text_field.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../utils/clipboard_util.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:highlight/languages/json.dart' as highlight;
 
 class JsonPage extends StatefulWidget {
@@ -169,60 +167,6 @@ class _JsonPageState extends State<JsonPage> {
     });
   }
 
-  Future<void> _saveToFile(String content, {String? prefix}) async {
-    try {
-      final now = DateTime.now();
-      final fileName = '${prefix ?? 'json'}_${now.millisecondsSinceEpoch}.txt';
-
-      String? savePath;
-
-      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-        final directory = await getDownloadsDirectory();
-        if (directory != null) {
-          savePath = '${directory.path}${Platform.pathSeparator}$fileName';
-        }
-      }
-
-      if (savePath == null) {
-        final directory = await getApplicationDocumentsDirectory();
-        savePath = '${directory.path}${Platform.pathSeparator}$fileName';
-      }
-
-      final file = File(savePath);
-      await file.writeAsString(content);
-
-      if (context.mounted) {
-        ClipboardUtil.showSnackBar(
-          '文件保存成功！\n保存路径: $savePath',
-          duration: const Duration(seconds: 5),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 80,
-            right: 200,
-            left: 200,
-          ),
-          action: SnackBarAction(
-            label: '知道了',
-            onPressed: () {
-              ClipboardUtil.rootScaffoldMessengerKey.currentState
-                  ?.hideCurrentSnackBar();
-            },
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ClipboardUtil.showSnackBar(
-          '保存文件失败，请重试',
-          backgroundColor: Colors.red,
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 80,
-            right: 200,
-            left: 200,
-          ),
-        );
-      }
-    }
-  }
 
   Widget _buildEditor() {
     _isDarkMode = Theme.of(context).brightness == Brightness.dark;
