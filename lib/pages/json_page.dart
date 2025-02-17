@@ -280,7 +280,7 @@ class _JsonPageState extends State<JsonPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
@@ -313,7 +313,7 @@ class _JsonPageState extends State<JsonPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(

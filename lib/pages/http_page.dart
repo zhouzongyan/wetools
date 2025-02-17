@@ -128,7 +128,7 @@ class _HttpPageState extends State<HttpPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
@@ -161,7 +161,7 @@ class _HttpPageState extends State<HttpPage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context)
                               .colorScheme
-                              .surfaceVariant
+                              .surfaceContainerHighest
                               .withOpacity(0.9),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
