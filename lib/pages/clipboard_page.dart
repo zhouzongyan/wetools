@@ -396,7 +396,8 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemBuilder: (context, index) {
         final item = filteredItems[index];
         final displayIndex = filteredItems.length - index;
-        return _buildClipboardItem(item, inFavorites: false, index: displayIndex - 1);
+        return _buildClipboardItem(item,
+            inFavorites: false, index: displayIndex - 1);
       },
     );
   }
@@ -417,7 +418,8 @@ class _ClipboardPageState extends State<ClipboardPage> {
       itemBuilder: (context, index) {
         final item = filteredItems[index];
         final displayIndex = filteredItems.length - index;
-        return _buildClipboardItem(item, inFavorites: true, index: displayIndex - 1);
+        return _buildClipboardItem(item,
+            inFavorites: true, index: displayIndex - 1);
       },
     );
   }
@@ -447,10 +449,13 @@ class _ClipboardPageState extends State<ClipboardPage> {
           ),
         ),
         title: item.isImage
-            ? Image.memory(
-                item.imageData!,
-                height: 100,
-                fit: BoxFit.contain,
+            ? InkWell(
+                onTap: () => _showImagePreview(item.imageData!),
+                child: Image.memory(
+                  item.imageData!,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
               )
             : Text(
                 item.text ?? '',
@@ -562,6 +567,58 @@ class _ClipboardPageState extends State<ClipboardPage> {
                 }
               },
               tooltip: '删除',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePreview(Uint8List imageData) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              child: Image.memory(
+                imageData,
+                fit: BoxFit.contain,
+              ),
+            ),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () {
+                      _saveImage(imageData);
+                      Navigator.pop(context);
+                    },
+                    tooltip: '保存图片',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                    tooltip: '关闭',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
