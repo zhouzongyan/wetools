@@ -37,6 +37,16 @@ class _SettingsPageState extends State<SettingsPage> {
     text: SettingsUtil.defaultUpdateCheckInterval.toString(),
   );
 
+  int _maxHistoryItems = SettingsUtil.defaultMaxHistoryItems;
+  int _maxFavoriteItems = SettingsUtil.defaultMaxFavoriteItems;
+  int _maxTextLength = SettingsUtil.defaultMaxTextLength;
+  int _cleanupInterval = SettingsUtil.defaultCleanupInterval;
+  int _updateCheckInterval = SettingsUtil.defaultUpdateCheckInterval;
+  int _ftpPort = SettingsUtil.defaultFtpPort;
+  String _ftpUsername = SettingsUtil.defaultFtpUsername;
+  String _ftpPassword = SettingsUtil.defaultFtpPassword;
+  bool _hasFileShareChanges = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +54,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadProxySettings();
     _loadClipboardSettings();
     _loadUpdateSettings();
+    _loadSettings();
   }
 
   @override
@@ -89,6 +100,30 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _autoUpdateCheck = autoCheck;
       _updateCheckIntervalController.text = interval.toString();
+    });
+  }
+
+  Future<void> _loadSettings() async {
+    final maxHistoryItems = await SettingsUtil.getMaxHistoryItems();
+    final maxFavoriteItems = await SettingsUtil.getMaxFavoriteItems();
+    final maxTextLength = await SettingsUtil.getMaxTextLength();
+    final cleanupInterval = await SettingsUtil.getCleanupInterval();
+    final updateCheckInterval = await SettingsUtil.getUpdateCheckInterval();
+    final autoUpdateCheck = await SettingsUtil.getAutoUpdateCheck();
+    final ftpPort = await SettingsUtil.getFtpPort();
+    final ftpUsername = await SettingsUtil.getFtpUsername();
+    final ftpPassword = await SettingsUtil.getFtpPassword();
+
+    setState(() {
+      _maxHistoryItems = maxHistoryItems;
+      _maxFavoriteItems = maxFavoriteItems;
+      _maxTextLength = maxTextLength;
+      _cleanupInterval = cleanupInterval;
+      _updateCheckInterval = updateCheckInterval;
+      _autoUpdateCheck = autoUpdateCheck;
+      _ftpPort = ftpPort;
+      _ftpUsername = ftpUsername;
+      _ftpPassword = ftpPassword;
     });
   }
 
@@ -327,8 +362,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       final intValue = int.tryParse(value);
                       if (intValue != null && intValue > 0) {
                         await SettingsUtil.setUpdateCheckInterval(intValue);
-                        setState(() {
-                        });
+                        setState(() {});
                         SettingsUtil.notifySettingsChanged();
                       }
                     },
@@ -339,6 +373,120 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
       ],
     );
+  }
+
+  Widget _buildFileShareSettings() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '文件共享设置',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  _buildNumberField(
+                    label: '端口',
+                    initialValue: _ftpPort,
+                    onChanged: (value) {
+                      if (value != null && value > 0 && value < 65536) {
+                        setState(() {
+                          _ftpPort = value;
+                          _hasFileShareChanges = true;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Expanded(
+                        flex: 2,
+                        child: Text('用户名'),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 3,
+                        child: WindowsTextField(
+                          controller: TextEditingController(text: _ftpUsername),
+                          onChanged: (value) {
+                            setState(() {
+                              _ftpUsername = value;
+                              _hasFileShareChanges = true;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Expanded(
+                        flex: 2,
+                        child: Text('密码'),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 3,
+                        child: WindowsTextField(
+                          controller: TextEditingController(text: _ftpPassword),
+                          onChanged: (value) {
+                            setState(() {
+                              _ftpPassword = value;
+                              _hasFileShareChanges = true;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      FilledButton(
+                        onPressed: _hasFileShareChanges
+                            ? _saveFileShareSettings
+                            : null,
+                        child: const Text('保存设置'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveFileShareSettings() async {
+    await SettingsUtil.setFtpPort(_ftpPort);
+    await SettingsUtil.setFtpUsername(_ftpUsername);
+    await SettingsUtil.setFtpPassword(_ftpPassword);
+
+    setState(() {
+      _hasFileShareChanges = false;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('文件共享设置已保存'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    SettingsUtil.notifySettingsChanged();
   }
 
   @override
@@ -420,6 +568,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     _buildProxySettings(),
                     _buildUpdateSettings(),
+                    const SizedBox(height: 16),
+                    _buildFileShareSettings(),
                     const Divider(),
                     Text(
                       '剪贴板',

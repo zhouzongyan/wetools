@@ -14,6 +14,7 @@ import 'ip_page.dart';
 import 'email_page.dart';
 import 'clipboard_page.dart';
 import 'hosts_page.dart';
+import 'ftp_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -94,6 +95,11 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: Icon(Icons.dns),
       label: Text('Hosts'),
     ),
+    NavigationRailDestination(
+      icon: Icon(Icons.folder_shared_outlined),
+      selectedIcon: Icon(Icons.folder_shared),
+      label: Text('文件共享'),
+    ),
   ];
 
   final List<({Widget page, String label})> _pages = const [
@@ -118,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // 系统工具类
     (page: ProcessPage(), label: '进程'),
     (page: HostsPage(), label: 'Hosts'),
+    (page: FtpPage(), label: '文件共享'),
   ];
 
   @override

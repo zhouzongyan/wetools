@@ -7,6 +7,9 @@ class SettingsUtil {
   static const String _cleanupIntervalKey = 'clipboard_cleanup_interval';
   static const String _updateCheckIntervalKey = 'update_check_interval';
   static const String _autoUpdateCheckKey = 'auto_update_check';
+  static const String _ftpPortKey = 'ftp_port';
+  static const String _ftpUsernameKey = 'ftp_username';
+  static const String _ftpPasswordKey = 'ftp_password';
 
   // 默认值
   static const int defaultMaxHistoryItems = 100;
@@ -15,6 +18,9 @@ class SettingsUtil {
   static const int defaultCleanupInterval = 24; // 小时
   static const int defaultUpdateCheckInterval = 12; // 小时
   static const bool defaultAutoUpdateCheck = true;
+  static const int defaultFtpPort = 2121;
+  static const String defaultFtpUsername = 'wetools';
+  static const String defaultFtpPassword = '123456';
 
   // 设置变更监听器列表
   static final List<Function()> _listeners = [];
@@ -66,6 +72,21 @@ class SettingsUtil {
     return prefs.getBool(_autoUpdateCheckKey) ?? defaultAutoUpdateCheck;
   }
 
+  static Future<int> getFtpPort() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_ftpPortKey) ?? defaultFtpPort;
+  }
+
+  static Future<String> getFtpUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_ftpUsernameKey) ?? defaultFtpUsername;
+  }
+
+  static Future<String> getFtpPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_ftpPasswordKey) ?? defaultFtpPassword;
+  }
+
   static Future<void> setMaxHistoryItems(int value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_maxHistoryItemsKey, value);
@@ -94,5 +115,20 @@ class SettingsUtil {
   static Future<void> setAutoUpdateCheck(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_autoUpdateCheckKey, value);
+  }
+
+  static Future<void> setFtpPort(int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_ftpPortKey, value);
+  }
+
+  static Future<void> setFtpUsername(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_ftpUsernameKey, value);
+  }
+
+  static Future<void> setFtpPassword(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_ftpPasswordKey, value);
   }
 }
