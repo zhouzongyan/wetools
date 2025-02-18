@@ -14,7 +14,8 @@ class ProcessPage extends StatefulWidget {
   State<ProcessPage> createState() => _ProcessPageState();
 }
 
-class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClientMixin {
+class _ProcessPageState extends State<ProcessPage>
+    with AutomaticKeepAliveClientMixin {
   final _searchController = TextEditingController();
   String _searchText = '';
   String _searchType = '进程名称';
@@ -32,23 +33,30 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
   String? _scriptsPath;
   bool _hasInitialized = false;
   DateTime? _lastLoadTime;
-  static const _cacheValidDuration = Duration(seconds: 30);  // 缓存有效期30秒
+  static const _cacheValidDuration = Duration(seconds: 30); // 缓存有效期30秒
+  String _totalMemoryInfo = '加载中...';
+  Timer? _memoryUpdateTimer;
+  double _totalMemoryGB = 0;
+  double _usedMemoryGB = 0;
+  double _freeMemoryGB = 0;
+  double _memoryUsagePercent = 0;
 
   @override
-  bool get wantKeepAlive => true;  // 保持页面状态
+  bool get wantKeepAlive => true; // 保持页面状态
 
   @override
   void initState() {
     super.initState();
     // 延迟初始化，让页面先显示出来
     Future.microtask(() => _initializeIfNeeded());
+    _startMemoryMonitor();
   }
 
   Future<void> _initializeIfNeeded() async {
     if (!_hasInitialized) {
       await _initScripts();
       await _checkAdminPrivilege();
-      await _refreshProcesses();  // 只在这里调用一次
+      await _refreshProcesses(); // 只在这里调用一次
       _hasInitialized = true;
     }
   }
@@ -99,6 +107,7 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
   void dispose() {
     _searchController.dispose();
     _refreshTimer?.cancel();
+    _memoryUpdateTimer?.cancel();
     super.dispose();
   }
 
@@ -107,7 +116,8 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
       if (Platform.isWindows) {
         final result = await Process.run('net', ['session']);
         setState(() {
-          _hasAdminPrivilege = result.exitCode == 0;
+          _hasAdminPrivilege = true;
+          // _hasAdminPrivilege = result.exitCode == 0;
         });
       }
     } catch (e) {
@@ -119,7 +129,7 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
 
   Future<void> _refreshProcesses() async {
     // 检查缓存是否有效
-    if (_lastLoadTime != null && 
+    if (_lastLoadTime != null &&
         DateTime.now().difference(_lastLoadTime!) < _cacheValidDuration &&
         _processes.isNotEmpty) {
       return;
@@ -172,7 +182,7 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
         _sortProcesses();
         _updateGroupedProcesses();
         _isFirstLoad = false;
-        _lastLoadTime = DateTime.now();  // 更新最后加载时间
+        _lastLoadTime = DateTime.now(); // 更新最后加载时间
       });
     } catch (e) {
       if (mounted) {
@@ -248,32 +258,44 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
 
   Future<void> _killProcess(String pid) async {
     try {
-      if (Platform.isWindows) {
-        final processInfo = _processes.firstWhere((p) => p.pid == pid);
+      final bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('确认终止进程'),
+          content: Text('确定要终止进程 (PID: $pid) 吗？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('终止'),
+            ),
+          ],
+        ),
+      );
 
-        final result = await Process.run('taskkill', ['/F', '/PID', pid]);
+      if (confirm == true) {
+        final result = await Process.run('powershell', [
+          '-Command',
+          'Stop-Process -Id $pid -Force',
+        ]);
 
         if (result.exitCode == 0) {
-          await _refreshProcesses();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('进程已终止\n'
-                    '进程名称: ${processInfo.name}\n'
-                    'PID: ${processInfo.pid}\n'
-                    '内存占用: ${processInfo.memory}'),
-                duration: const Duration(seconds: 3),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(8),
-              ),
+              const SnackBar(content: Text('进程已终止')),
             );
+            // 刷新进程列表
+            _refreshProcesses();
           }
         } else {
-          throw Exception(result.stderr);
+          throw result.stderr;
         }
-      } else {
-        await Process.run('kill', ['-9', pid]);
-        await _refreshProcesses();
       }
     } catch (e) {
       if (mounted) {
@@ -281,8 +303,6 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
           SnackBar(
             content: Text('终止进程失败: $e'),
             backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(8),
           ),
         );
       }
@@ -299,7 +319,7 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
       builder: (context) => FutureBuilder(
         // 同时加载所有需要的数据
         future: Future.wait<dynamic>([
-          process.loadPorts().then((_) => process.ports),  // 转换为返回 String
+          process.loadPorts().then((_) => process.ports), // 转换为返回 String
           _getProcessDetails(process),
           _getProcessTree(process),
         ]),
@@ -309,7 +329,8 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
             return AlertDialog(
               title: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
+                  Icon(Icons.info_outline,
+                      color: Theme.of(context).primaryColor),
                   const SizedBox(width: 8),
                   Text('进程详情: ${process.name}'),
                 ],
@@ -347,7 +368,9 @@ class _ProcessPageState extends State<ProcessPage> with AutomaticKeepAliveClient
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('进程树信息:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  const Text('进程树信息:',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 8),
                                   SelectableText(snapshot.data?[2] ?? ''),
                                 ],
@@ -445,28 +468,30 @@ CPU使用率: ${info['CPU']}
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);  // 需要调用 super.build
-    
+    super.build(context); // 需要调用 super.build
+
     final filteredProcesses = _getFilteredProcesses();
 
     Widget? warningBanner;
     if (!_hasAdminPrivilege) {
-      warningBanner = Container(
-        padding: const EdgeInsets.all(8),
-        color: Colors.orange.withOpacity(0.1),
-        child: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '提示: 当前程序未以管理员权限运行,部分功能可能受限。',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
+      warningBanner = SelectionArea(
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          color: Colors.orange.withOpacity(0.1),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '提示: 当前程序未以管理员权限运行,部分功能可能受限。',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -492,27 +517,57 @@ CPU使用率: ${info['CPU']}
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           const SizedBox(height: 4),
-                          Row(
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 8,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text(
-                                '进程总数: ${filteredProcesses.length}${_searchText.isNotEmpty ? ' (已过滤)' : ''}',
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                              const SizedBox(width: 8),
-                              if (_hasAdminPrivilege) ...[
-                                const Icon(
-                                  Icons.admin_panel_settings,
-                                  size: 16,
-                                  color: Colors.green,
-                                ),
-                                const Text(
-                                  '管理员模式',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 12,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.apps,
+                                      size: 16, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '进程总数: ${filteredProcesses.length}${_searchText.isNotEmpty ? ' (已过滤)' : ''}',
+                                    style: const TextStyle(color: Colors.grey),
                                   ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.memory,
+                                      size: 16, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${_totalMemoryGB.toStringAsFixed(1)}GB总内存, '
+                                    '${_usedMemoryGB.toStringAsFixed(1)}GB已用'
+                                    '(${_memoryUsagePercent.toStringAsFixed(1)}%), '
+                                    '${_freeMemoryGB.toStringAsFixed(1)}GB可用',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              if (_hasAdminPrivilege)
+                                const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.admin_panel_settings,
+                                      size: 16,
+                                      color: Colors.green,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '管理员模式',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
                             ],
                           ),
                         ],
@@ -718,7 +773,7 @@ CPU使用率: ${info['CPU']}
         case 'PID':
           return process.pid.contains(_searchText);
         case '端口号':
-          return process.ports.contains(_searchText);  // 使用当前的端口值
+          return process.ports.contains(_searchText); // 使用当前的端口值
         default:
           return false;
       }
@@ -857,53 +912,57 @@ CPU使用率: ${info['CPU']}
       itemCount: filteredProcesses.length,
       itemBuilder: (context, index) {
         final process = filteredProcesses[index];
-        return ListTile(
-          leading: Checkbox(
-            value: _selectedProcesses.contains(process.pid),
-            onChanged: (bool? value) {
-              setState(() {
-                if (value == true) {
-                  _selectedProcesses.add(process.pid);
-                } else {
-                  _selectedProcesses.remove(process.pid);
-                }
-              });
-            },
-          ),
-          title: Text(process.name),
-          subtitle: Row(
-            children: [
-              Text('PID: ${process.pid}'),
-              const SizedBox(width: 16),
-              Text('内存: ${process.memory}'),
-              if (process.ports != 'None') ...[
-                const SizedBox(width: 16),
-                Text('端口: ${process.ports}'),
-              ],
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: () => _showProcessDetails(process),
-                tooltip: '详情',
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.stop_circle_outlined,
-                  color: Colors.red[700],
-                ),
-                onPressed: !_hasAdminPrivilege
-                    ? null
-                    : () => _killProcess(process.pid),
-                tooltip: '终止进程',
-              ),
-            ],
-          ),
-        );
+        return _buildProcessItem(process, index);
       },
+    );
+  }
+
+  Widget _buildProcessItem(ProcessInfo process, int index) {
+    String truncatedPorts = process.ports;
+    if (process.ports != 'None' && process.ports.length > 30) {
+      final portsList = process.ports.split(', ');
+      if (portsList.length > 3) {
+        truncatedPorts = '${portsList.take(3).join(', ')} ...';
+      }
+    }
+
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        child: Text('${index + 1}'),
+      ),
+      title: Text(process.name),
+      subtitle: Wrap(
+        spacing: 16,
+        children: [
+          Text('PID: ${process.pid}'),
+          Text('内存: ${process.memory}'),
+          if (process.ports != 'None')
+            Tooltip(
+              message: process.ports,
+              child: Text('端口: $truncatedPorts'),
+            ),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showProcessDetails(process),
+            tooltip: '详情',
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.stop_circle_outlined,
+              color: _hasAdminPrivilege ? Colors.red[700] : Colors.grey,
+            ),
+            onPressed:
+                _hasAdminPrivilege ? () => _killProcess(process.pid) : null,
+            tooltip: _hasAdminPrivilege ? '终止进程' : '需要管理员权限',
+          ),
+        ],
+      ),
     );
   }
 
@@ -1014,12 +1073,21 @@ CPU使用率: ${info['CPU']}
         false;
 
     if (confirm) {
-      for (final pid in _selectedProcesses) {
-        await _killProcess(pid);
-      }
+      // 创建一个临时列表存储要删除的进程ID
+      final pidsToKill = List<String>.from(_selectedProcesses);
+
+      // 立即清空选中列表
       setState(() {
         _selectedProcesses.clear();
       });
+
+      // 逐个终止进程
+      for (final pid in pidsToKill) {
+        _killProcess(pid);
+      }
+
+      // 最后再刷新一次列表
+      await _refreshProcesses();
     }
   }
 
@@ -1031,6 +1099,45 @@ CPU使用率: ${info['CPU']}
 
   void _stopAutoRefresh() {
     _refreshTimer?.cancel();
+  }
+
+  void _startMemoryMonitor() {
+    // 立即获取一次
+    _updateMemoryInfo();
+    // 每5秒更新一次内存信息
+    _memoryUpdateTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _updateMemoryInfo();
+    });
+  }
+
+  Future<void> _updateMemoryInfo() async {
+    try {
+      final result = await Process.run('powershell', [
+        '-Command',
+        '''
+        \$os = Get-WmiObject Win32_OperatingSystem
+        \$total = \$os.TotalVisibleMemorySize / 1MB
+        \$free = \$os.FreePhysicalMemory / 1MB
+        \$used = (\$os.TotalVisibleMemorySize - \$os.FreePhysicalMemory) / 1MB
+        \$usedPercent = (\$used / \$total) * 100
+        "\$total|\$used|\$free|\$usedPercent"
+        '''
+      ]);
+
+      if (result.exitCode == 0 && mounted) {
+        final parts = result.stdout.trim().split('|');
+        if (parts.length == 4) {
+          setState(() {
+            _totalMemoryGB = double.parse(parts[0]);
+            _usedMemoryGB = double.parse(parts[1]);
+            _freeMemoryGB = double.parse(parts[2]);
+            _memoryUsagePercent = double.parse(parts[3]);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('获取内存信息失败: $e');
+    }
   }
 
   Widget _buildDetailItem(String label, String value) {
@@ -1060,7 +1167,7 @@ class ProcessInfo {
   final String pid;
   final String memory;
   final String rawMemory;
-  String ports;  // 移除 final 关键字
+  String ports; // 移除 final 关键字
 
   ProcessInfo({
     required this.name,
@@ -1072,8 +1179,8 @@ class ProcessInfo {
 
   // 加载端口信息的方法
   Future<void> loadPorts() async {
-    if (ports != 'None') return;  // 如果已加载则跳过
-    
+    if (ports != 'None') return; // 如果已加载则跳过
+
     try {
       final result = await Process.run('powershell', [
         '-Command',
@@ -1083,7 +1190,7 @@ class ProcessInfo {
         if (\$ports) { \$ports -join ', ' } else { 'None' }
         '''
       ]);
-      
+
       if (result.exitCode == 0) {
         ports = result.stdout.trim();
       }

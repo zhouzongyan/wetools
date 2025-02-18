@@ -26,15 +26,12 @@ void main() async {
   await LoggerUtil.init();
 
   // 设置异常处理
-  FlutterError.onError = (FlutterErrorDetails details) async {
-    await LoggerUtil.error(
-      '未捕获的Flutter异常',
-      details.exception,
-      details.stack,
-    );
-    if (kDebugMode) {
-      FlutterError.dumpErrorToConsole(details);
+  FlutterError.onError = (FlutterErrorDetails details) {
+    // 忽略键盘事件相关的错误
+    if (details.exception.toString().contains('KeyDownEvent')) {
+      return;
     }
+    FlutterError.presentError(details);
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {

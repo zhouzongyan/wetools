@@ -167,7 +167,6 @@ class _JsonPageState extends State<JsonPage> {
     });
   }
 
-
   Widget _buildEditor() {
     _isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final textColor = _isDarkMode ? Colors.grey.shade300 : Colors.grey.shade900;
