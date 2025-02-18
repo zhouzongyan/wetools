@@ -46,20 +46,17 @@ void main() async {
   await windowManager.ensureInitialized();
 
   // 配置窗口
-  await windowManager.waitUntilReadyToShow(null, () async {
-    // 设置窗口大小和其他属性
-    await windowManager.setSize(const Size(1280, 800));
-    await windowManager.setMinimumSize(const Size(800, 600));
-    await windowManager.center();
-
+  await windowManager.waitUntilReadyToShow(
+      const WindowOptions(
+        size: Size(1280, 800),
+        minimumSize: Size(800, 600),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.normal,
+      ), () async {
     // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
     await windowManager.setPreventClose(false);
-    await windowManager.setSkipTaskbar(false);
-    await windowManager.setTitleBarStyle(
-      TitleBarStyle.normal,
-      windowButtonVisibility: true,
-    );
-
     await windowManager.show();
     await windowManager.focus();
   });
@@ -299,6 +296,16 @@ class _AppFrameState extends State<AppFrame> {
                 onTap: () => _showSystemInfoDialog(context),
               ),
               PopupMenuItem(
+                child: const Text('重启'),
+                onTap: () async {
+                  // 延迟执行以避免菜单关闭动画问题
+                  await Future.delayed(const Duration(milliseconds: 100));
+                  if (mounted) {
+                    _restartApp();
+                  }
+                },
+              ),
+              PopupMenuItem(
                 child: const Text('退出'),
                 onTap: () => windowManager.close(),
               ),
@@ -399,5 +406,31 @@ class _AppFrameState extends State<AppFrame> {
         ),
       ),
     );
+  }
+
+  Future<void> _restartApp() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认重启'),
+        content: const Text('确定要重启应用程序吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('重启'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final executablePath = Platform.resolvedExecutable;
+      await Process.start(executablePath, []);
+      exit(0);
+    }
   }
 }
