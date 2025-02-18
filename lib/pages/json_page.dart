@@ -197,7 +197,7 @@ class _JsonPageState extends State<JsonPage> {
                 ),
               ),
               background: backgroundColor,
-              minLines: 10,
+              minLines: 20,
               maxLines: null,
             ),
           ),
