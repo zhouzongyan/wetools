@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:flutter/rendering.dart';
 
 class ProcessPage extends StatefulWidget {
   const ProcessPage({super.key});
@@ -28,13 +27,13 @@ class _ProcessPageState extends State<ProcessPage>
   Timer? _refreshTimer;
   String _viewMode = '列表';
   String _groupBy = '无';
-  Set<String> _selectedProcesses = {};
+  final Set<String> _selectedProcesses = {};
   Map<String, List<ProcessInfo>> _groupedProcesses = {};
   String? _scriptsPath;
   bool _hasInitialized = false;
   DateTime? _lastLoadTime;
   static const _cacheValidDuration = Duration(seconds: 30); // 缓存有效期30秒
-  String _totalMemoryInfo = '加载中...';
+  final String _totalMemoryInfo = '加载中...';
   Timer? _memoryUpdateTimer;
   double _totalMemoryGB = 0;
   double _usedMemoryGB = 0;
@@ -392,8 +391,8 @@ class _ProcessPageState extends State<ProcessPage>
             );
           }
           // 显示加载动画
-          return AlertDialog(
-            content: const SizedBox(
+          return const AlertDialog(
+            content: SizedBox(
               height: 100,
               child: Center(
                 child: Column(
@@ -688,7 +687,7 @@ CPU使用率: ${info['CPU']}
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: '搜索${_searchType}...',
+                          hintText: '搜索$_searchType...',
                           prefixIcon: const Icon(Icons.search),
                           suffixIcon: _searchText.isNotEmpty
                               ? IconButton(

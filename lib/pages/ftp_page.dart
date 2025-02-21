@@ -9,7 +9,6 @@ import '../utils/logger_util.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import '../utils/settings_util.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class FtpPage extends StatefulWidget {
@@ -25,7 +24,7 @@ class _FtpPageState extends State<FtpPage> {
   int _port = 2121;
   String _username = 'wetools';
   String _password = '123456';
-  List<TransferRecord> _transferRecords = [];
+  final List<TransferRecord> _transferRecords = [];
   HttpServer? _server;
   String _downloadPath = '';
   final _info = NetworkInfo();
@@ -207,7 +206,7 @@ class _FtpPageState extends State<FtpPage> {
                                       decoration: BoxDecoration(
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .surfaceVariant
+                                            .surfaceContainerHighest
                                             .withOpacity(0.3),
                                         borderRadius: BorderRadius.circular(8),
                                       ),

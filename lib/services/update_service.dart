@@ -182,8 +182,8 @@ del "%~f0"
         scriptContent = '''
 #!/bin/bash
 sleep 2
-cp -R "${extractPath}/"* "${currentDir}/"
-"${currentExePath}" &
+cp -R "$extractPath/"* "$currentDir/"
+"$currentExePath" &
 rm "\$0"
 ''';
         scriptPath = path.join(downloadDir.path, 'update.sh');
