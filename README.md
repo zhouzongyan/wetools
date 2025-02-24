@@ -112,5 +112,11 @@
 3. 或使用终端命令：`xattr -cr /Applications/wetools.app`
 
 
+## 支持作者
 
+如果觉得这个工具对你有帮助，可以请作者喝杯咖啡，支持作者继续开发。
+
+<img src="./assets/images/alipay.png" alt="支付宝" width="200">
+
+<img src="./assets/images/wechat_pay.png" alt="微信" width="200">
 
