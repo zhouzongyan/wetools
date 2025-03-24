@@ -50,7 +50,8 @@ void main() async {
         center: true,
         backgroundColor: Colors.transparent,
         skipTaskbar: false,
-        titleBarStyle: TitleBarStyle.normal,
+        titleBarStyle: TitleBarStyle.hidden,
+        windowButtonVisibility: true,
       ), () async {
     // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
     await windowManager.setPreventClose(false);
@@ -266,9 +267,73 @@ class _AppFrameState extends State<AppFrame> {
     return Scaffold(
       body: Column(
         children: [
+          Container(
+              height: 40,
+              color: Colors.blue, // 设置标题栏颜色
+              child: Row(
+                children: [
+                  // 拖动区域，用于移动窗口
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent, // 确保即使透明区域也能接收拖动事件
+                      onPanStart: (details) {
+                        windowManager.startDragging();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        alignment: Alignment.centerLeft,
+                        child: const Text(
+                          'WeTools',
+                          style: TextStyle(
+                            color: Colors.white, // 标题文字颜色
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 窗口控制按钮
+                  _buildWindowButton(
+                    Icons.remove,
+                    () => windowManager.minimize(),
+                  ),
+                  _buildWindowButton(
+                    Icons.crop_square,
+                    () async {
+                      if (await windowManager.isMaximized()) {
+                        windowManager.unmaximize();
+                      } else {
+                        windowManager.maximize();
+                      }
+                    },
+                  ),
+                  _buildWindowButton(
+                    Icons.close,
+                    () => windowManager.close(),
+                    hoverColor: Colors.red,
+                  ),
+                ],
+              )),
           if (Platform.isWindows) _buildMenuBar(context),
           const Expanded(child: MyHomePage(title: '开发者工具箱')),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWindowButton(IconData icon, VoidCallback onPressed,
+      {Color? hoverColor}) {
+    return InkWell(
+      onTap: onPressed,
+      hoverColor: hoverColor ?? Colors.black12,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 16,
+        ),
       ),
     );
   }

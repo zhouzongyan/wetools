@@ -2,7 +2,7 @@ name: wetools
 description: "属于我们开发者自己的工具箱."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -19,8 +19,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.1.6
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.16.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.16.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -49,7 +49,7 @@ dependencies:
   shared_preferences: ^2.2.2
   launch_at_startup: ^0.2.2
   mailer: ^6.1.0
-  window_manager: ^0.3.8
+  window_manager: ^0.4.3
   package_info_plus: ^5.0.1
   flutter_acrylic: ^1.1.3
   flutter_highlight: ^0.7.0
@@ -81,7 +81,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -122,7 +121,7 @@ flutter:
     - family: SourceHanSansSC
       fonts:
         - asset: assets/fonts/SourceHanSansSC-Regular.otf
-    - family: JetBrainsMono   
+    - family: JetBrainsMono
       fonts:
         - asset: assets/fonts/JetBrainsMono-Regular.ttf
 
