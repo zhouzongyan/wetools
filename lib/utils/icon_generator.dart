@@ -21,7 +21,7 @@ void generateIcon() {
     // 将图像保存为 PNG
     image.toByteData(format: ui.ImageByteFormat.png).then((byteData) {
       final buffer = byteData!.buffer;
-      File('assets/icon/app_icon.png').writeAsBytesSync(
+      File('assets/icon/app_icon_new.png').writeAsBytesSync(
           buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
     });
   });
