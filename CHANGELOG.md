@@ -1,5 +1,10 @@
 # 更新日志
 
+## [v1.1.7] - 2025-03-26
+### 新增
+- tcp 连接页面增加 websocket 支持
+- 合入 [zhouzongyan](https://github.com/zhouzongyan) 的托盘功能及菜单标题配色
+
 ## [v1.1.6] - 2025-02-23
 ### 新增
 - 优化页面编辑框等
