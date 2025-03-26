@@ -17,6 +17,7 @@ import 'widgets/update_progress_dialog.dart';
 import 'utils/settings_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:tray_manager/tray_manager.dart';
 
 void main() async {
   // 确保 Flutter 绑定初始化
@@ -54,7 +55,7 @@ void main() async {
         windowButtonVisibility: true,
       ), () async {
     // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
-    await windowManager.setPreventClose(false);
+    await windowManager.setPreventClose(true);
     await windowManager.show();
     await windowManager.focus();
   });
@@ -138,9 +139,10 @@ class AppFrame extends StatefulWidget {
   State<AppFrame> createState() => _AppFrameState();
 }
 
-class _AppFrameState extends State<AppFrame> {
+class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
   Timer? _updateCheckTimer;
   String _version = '';
+  bool _isQuitting = false;
 
   @override
   void initState() {
@@ -148,12 +150,96 @@ class _AppFrameState extends State<AppFrame> {
     _initUpdateCheck();
     _loadVersion();
     SettingsUtil.addListener(_initUpdateCheck);
+    // 添加窗口监听器
+    windowManager.addListener(this);
+
+    // 添加托盘监听器
+    trayManager.addListener(this);
+
+    // 初始化系统托盘
+    _initSystemTray();
+  }
+
+  // 初始化系统托盘
+  Future<void> _initSystemTray() async {
+    // 设置托盘图标
+    String iconPath = Platform.isWindows
+        ? 'assets/icon/app_icon.ico'
+        : Platform.isMacOS
+            ? 'assets/icon/app_icon.png'
+            : 'assets/icon/app_icon.ico';
+
+    await trayManager.setIcon(iconPath);
+    await trayManager.setToolTip('WeTools');
+
+    // 设置托盘菜单
+    await _setTrayMenu();
+  }
+
+  // 设置托盘菜单
+  Future<void> _setTrayMenu() async {
+    final Menu menu = Menu(
+      items: [
+        MenuItem(
+          label: '显示',
+          onClick: (_) async {
+            await windowManager.show();
+            await windowManager.focus();
+          },
+        ),
+        MenuItem.separator(),
+        MenuItem(
+          label: '退出',
+          onClick: (_) async {
+            _isQuitting = true;
+            await windowManager.close();
+          },
+        ),
+      ],
+    );
+
+    await trayManager.setContextMenu(menu);
+  }
+
+  // 窗口关闭请求处理
+  @override
+  void onWindowClose() async {
+    if (_isQuitting) {
+      // 如果是真正要退出，就允许关闭
+      await windowManager.destroy();
+    } else {
+      // 否则隐藏窗口到托盘
+      await windowManager.hide();
+
+      // 显示托盘通知
+      if (Platform.isWindows) {
+        // await trayManager.showNotification(
+        //   title: 'WeTools',
+        //   message: 'WeTools 正在后台运行',
+        // );
+      }
+    }
+  }
+
+  // 托盘图标点击事件
+  @override
+  void onTrayIconMouseDown() async {
+    await windowManager.show();
+    await windowManager.focus();
+  }
+
+  // 托盘图标右键点击事件
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
   }
 
   @override
   void dispose() {
     _updateCheckTimer?.cancel();
     SettingsUtil.removeListener(_initUpdateCheck);
+    windowManager.removeListener(this); // 添加移除窗口监听器
+    trayManager.removeListener(this); // 添加移除托盘监听器
     super.dispose();
   }
 
