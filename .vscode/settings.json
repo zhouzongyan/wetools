@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/thinks/other/github/flutter/wetools/wetools/windows"
+    "cmake.sourceDirectory": "D:/thinks/other/github/flutter/wetools/wetools/windows",
+    "sftp-tools.servers": []
 }

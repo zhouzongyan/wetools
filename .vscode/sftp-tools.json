@@ -1,0 +1,17 @@
+{
+    "servers": [
+        {
+            "name": "test",
+            "host": "47.115.79.204",
+            "port": 22,
+            "username": "root",
+            "password": "Manicotti7826",
+            "localPath": "/",
+            "remotePath": "/"
+        }
+    ],
+    "settings": {
+        "showConfirmDialog": true,
+        "uploadOrDeleteBackup": "/"
+    }
+}
