@@ -355,7 +355,7 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
         children: [
           Container(
               height: 40,
-              color: Colors.blue, // 设置标题栏颜色
+              color: Colors.grey.shade500, // 设置标题栏颜色
               child: Row(
                 children: [
                   // 拖动区域，用于移动窗口
@@ -371,7 +371,7 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
                         child: const Text(
                           'WeTools',
                           style: TextStyle(
-                            color: Colors.white, // 标题文字颜色
+                            color: Colors.black, // 标题文字颜色
                             fontSize: 14,
                           ),
                         ),
@@ -396,7 +396,7 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
                   _buildWindowButton(
                     Icons.close,
                     () => windowManager.close(),
-                    hoverColor: Colors.red,
+                    hoverColor: Colors.blue,
                   ),
                 ],
               )),
