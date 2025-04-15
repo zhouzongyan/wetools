@@ -13,6 +13,10 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // 添加阿里云镜像，提高国内下载速度
+        // maven { url 'https://maven.aliyun.com/repository/google' }
+        // maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        // maven { url 'https://maven.aliyun.com/repository/public' }
     }
 }
 
@@ -23,3 +27,16 @@ plugins {
 }
 
 include ":app"
+
+// 添加全局仓库配置
+// dependencyResolutionManagement {
+//     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+//     repositories {
+//         google()
+//         mavenCentral()
+//         // 添加阿里云镜像
+//         maven { url 'https://maven.aliyun.com/repository/google' }
+//         maven { url 'https://maven.aliyun.com/repository/jcenter' }
+//         maven { url 'https://maven.aliyun.com/repository/public' }
+//     }
+// }

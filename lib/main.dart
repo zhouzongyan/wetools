@@ -39,34 +39,35 @@ void main() async {
     LoggerUtil.error('未捕获的异步异常', error, stack);
     return true;
   };
-
-  // 初始化窗口管理器
-  await windowManager.ensureInitialized();
-
-  // 配置窗口
-  await windowManager.waitUntilReadyToShow(
-      const WindowOptions(
-        size: Size(1280, 800),
-        minimumSize: Size(800, 600),
-        center: true,
-        backgroundColor: Colors.transparent,
-        skipTaskbar: false,
-        titleBarStyle: TitleBarStyle.hidden,
-        windowButtonVisibility: true,
-      ), () async {
-    // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
-    await windowManager.setPreventClose(true);
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  // 仅在桌面平台初始化窗口管理器
+  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    // 初始化窗口管理器
+    await windowManager.ensureInitialized();
+    // 配置窗口
+    await windowManager.waitUntilReadyToShow(
+        const WindowOptions(
+          size: Size(1280, 800),
+          minimumSize: Size(800, 600),
+          center: true,
+          backgroundColor: Colors.transparent,
+          skipTaskbar: false,
+          titleBarStyle: TitleBarStyle.hidden,
+          windowButtonVisibility: true,
+        ), () async {
+      // 只禁用菜单栏的最大最小化，保留窗口标题栏按钮
+      await windowManager.setPreventClose(true);
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   // 初始化自启动功能
-  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+  // if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
     launchAtStartup.setup(
       appName: 'WeTools',
       appPath: Platform.resolvedExecutable,
     );
-  }
+  // }
 
   // 运行应用
   runApp(const MyApp());
@@ -150,6 +151,8 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
     _initUpdateCheck();
     _loadVersion();
     SettingsUtil.addListener(_initUpdateCheck);
+    // 只在桌面平台初始化窗口和托盘
+  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
     // 添加窗口监听器
     windowManager.addListener(this);
 
@@ -158,6 +161,8 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
 
     // 初始化系统托盘
     _initSystemTray();
+  }
+    
   }
 
   // 初始化系统托盘
@@ -350,6 +355,18 @@ class _AppFrameState extends State<AppFrame> with WindowListener, TrayListener {
 
   @override
   Widget build(BuildContext context) {
+    // 针对移动平台使用不同的布局
+  if (Platform.isAndroid || Platform.isIOS) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('WeTools'),
+      ),
+      body: const MyHomePage(
+        title: '开发者工具箱',
+        scrollToTop: true,
+      ),
+    );
+  }
     return Scaffold(
       body: Column(
         children: [
