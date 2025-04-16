@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/tool_model.dart';
 import '../data/tools_data.dart';
 import '../widgets/breadcrumb_navigation.dart';
+import 'dart:io';
 
 class MyHomePage extends StatefulWidget {
   final String title;
@@ -212,6 +213,46 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // 判断是否为移动设备
+    final bool isMobile = Platform.isAndroid || Platform.isIOS;
+    // 获取屏幕宽度
+    final double screenWidth = MediaQuery.of(context).size.width;
+    
+    // 根据屏幕宽度决定每行显示的卡片数量
+    int crossAxisCount = 4; // 桌面默认值
+    double childAspectRatio = 1.5; // 桌面默认值
+    double padding = 16.0; // 桌面默认值
+    double spacing = 16.0; // 桌面默认值
+    double iconSize = 32.0; // 桌面默认值
+    double titleFontSize = 16.0; // 桌面默认值
+    double descFontSize = 12.0; // 桌面默认值
+    if (isMobile) {
+      if (screenWidth < 360) {
+        crossAxisCount = 2;
+        childAspectRatio = 1.0;
+        padding = 8.0;
+        spacing = 8.0;
+        iconSize = 24.0;
+        titleFontSize = 14.0;
+        descFontSize = 10.0;
+      } else if (screenWidth < 600) {
+        crossAxisCount = 2;
+        childAspectRatio = 1.2;
+        padding = 12.0;
+        spacing = 12.0;
+        iconSize = 28.0;
+        titleFontSize = 14.0;
+        descFontSize = 10.0;
+      } else {
+        crossAxisCount = 3;
+        childAspectRatio = 1.3;
+        padding = 12.0;
+        spacing = 12.0;
+        iconSize = 28.0;
+        titleFontSize = 14.0;
+        descFontSize = 11.0;
+      }
+    }
     return Scaffold(
       body: Column(
         children: [
@@ -269,7 +310,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // 主内容区域
           Expanded(
-            child: _showToolDetail ? _buildToolDetailPage() : _buildHomePage(),
+            child: _showToolDetail 
+                ? _buildToolDetailPage() 
+                : _buildHomePage(isMobile, crossAxisCount, childAspectRatio, padding, spacing, iconSize, titleFontSize, descFontSize),
           ),
         ],
       ),
@@ -281,46 +324,63 @@ class _MyHomePageState extends State<MyHomePage> {
     return _selectedTool!.page;
   }
 
-  Widget _buildHomePage() {
+  Widget _buildHomePage(
+    bool isMobile, 
+    int crossAxisCount, 
+    double childAspectRatio, 
+    double padding, 
+    double spacing, 
+    double iconSize, 
+    double titleFontSize, 
+    double descFontSize
+  ) {
     return ListView(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(padding),
       children: [
         // 搜索结果
         if (_isSearching) ...[
           Container(
             key: _searchResultsKey,
-            margin: const EdgeInsets.only(bottom: 24),
+            margin: EdgeInsets.only(bottom: padding * 1.5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '搜索结果 (${_searchResults.length})',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: isMobile ? 18 : null,
+                  ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: padding),
                 if (_searchResults.isEmpty)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text('没有找到匹配的工具'),
+                      padding: EdgeInsets.all(padding * 2),
+                      child: const Text('没有找到匹配的工具'),
                     ),
                   )
                 else
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 1.5,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: childAspectRatio,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing,
                     ),
                     itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
                       final tool = _searchResults[index];
-                      return _buildToolCard(tool);
+                      return _buildToolCard(
+                        tool, 
+                        isMobile, 
+                        iconSize, 
+                        titleFontSize, 
+                        descFontSize, 
+                        padding
+                      );
                     },
                   ),
               ],
@@ -333,7 +393,7 @@ class _MyHomePageState extends State<MyHomePage> {
           final groupTools = ToolsData.getToolsByGroup(group.id);
           return Container(
             key: _groupKeys[group.id],
-            margin: const EdgeInsets.only(bottom: 24),
+            margin: EdgeInsets.only(bottom: padding * 1.5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -342,39 +402,52 @@ class _MyHomePageState extends State<MyHomePage> {
                     Icon(
                       group.icon,
                       color: group.color,
-                      size: 24,
+                      size: isMobile ? 20 : 24,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: isMobile ? 6 : 8),
                     Text(
                       group.name,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontSize: isMobile ? 18 : null,
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      group.description,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
-                          ),
+                    SizedBox(width: isMobile ? 8 : 12),
+                    Expanded(
+                      child: Text(
+                        group.description,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                          fontSize: isMobile ? 12 : null,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: padding),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    childAspectRatio: 1.5,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: childAspectRatio,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
                   ),
                   itemCount: groupTools.length,
                   itemBuilder: (context, index) {
                     final tool = groupTools[index];
-                    return _buildToolCard(tool);
+                    return _buildToolCard(
+                      tool, 
+                      isMobile, 
+                      iconSize, 
+                      titleFontSize, 
+                      descFontSize, 
+                      padding
+                    );
                   },
                 ),
               ],
@@ -385,49 +458,62 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildToolCard(ToolModel tool) {
+  Widget _buildToolCard(
+    ToolModel tool, 
+    bool isMobile, 
+    double iconSize, 
+    double titleFontSize, 
+    double descFontSize, 
+    double padding
+  ) {
     final group = ToolsData.getGroupById(tool.groupId);
     final color = group?.color ?? Colors.grey;
+    final cardPadding = isMobile ? padding / 2 : padding;
+    final borderRadius = isMobile ? 8.0 : 12.0;
 
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: InkWell(
         onTap: () => _openTool(tool),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(borderRadius),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(cardPadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 tool.icon,
-                size: 32,
+                size: iconSize,
                 color: color,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: isMobile ? 6.0 : 12.0),
               Text(
                 tool.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                tool.description,
                 style: TextStyle(
-                  fontSize: 12,
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  fontWeight: FontWeight.bold,
+                  fontSize: titleFontSize,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (!isMobile || (isMobile && tool.description.length < 30)) ...[
+                SizedBox(height: isMobile ? 2 : 4),
+                Text(
+                  tool.description,
+                  style: TextStyle(
+                    fontSize: descFontSize,
+                    color:
+                        Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: isMobile ? 1 : 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
           ),
         ),
