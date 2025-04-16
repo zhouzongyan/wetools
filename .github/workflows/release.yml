@@ -31,11 +31,16 @@ jobs:
             build-command: flutter build linux --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
             artifact-path: build/linux/x64/release/bundle
             platform: linux
-#          - os: ubuntu-latest
-#            output-name: wetools-android.apk
-#            build-command: flutter build apk --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
-#            artifact-path: build/app/outputs/flutter-apk/app-release.apk
-#            platform: android
+          - os: ubuntu-latest
+            output-name: wetools-android.apk
+            build-command: flutter build apk --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions
+            artifact-path: build/app/outputs/flutter-apk/app-release.apk
+            platform: android
+          - os: macos-latest
+            output-name: wetools-ios.ipa
+            build-command: flutter build ios --release --split-debug-info=symbols --tree-shake-icons --no-null-assertions --no-codesign
+            artifact-path: build/ios/iphoneos
+            platform: ios
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -60,14 +65,30 @@ jobs:
         uses: android-actions/setup-android@v3
 
       # 配置 Android 签名
-#      - name: Setup Android Signing
-#        if: matrix.platform == 'android'
-#        run: |
-#          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-#          echo "storeFile=keystore.jks" >> android/key.properties
-#          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
-#          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-#          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+      - name: Setup Android Signing
+        if: matrix.platform == 'android'
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "storeFile=keystore.jks" >> android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+
+      # 设置 iOS 构建环境
+      - name: Setup iOS build environment
+        if: matrix.platform == 'ios'
+        run: |
+          # 安装必要的工具
+          brew install xcbeautify
+          
+          # 设置 iOS 项目配置
+          cd ios
+          # 更新 Bundle ID
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier top.caoayu.wetools" Runner/Info.plist
+          # 更新版本号
+          VERSION=$(echo ${{ github.ref_name }} | sed 's/v//')
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" Runner/Info.plist
+          cd ..
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -80,7 +101,7 @@ jobs:
 
       # 添加 macOS 最低部署版本设置
       - name: Set macOS deployment target
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && matrix.platform == 'macos'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=10.14.6" >> $GITHUB_ENV
           
@@ -102,13 +123,21 @@ jobs:
           # 运行 pod install
           cd macos && pod install && cd ..
 
+      # 为 iOS 运行 pod install
+      - name: Install iOS pods
+        if: matrix.platform == 'ios'
+        run: |
+          cd ios && pod install && cd ..
+
       - name: Build application
         run: |
           flutter config --enable-windows-desktop
           flutter config --enable-macos-desktop
           flutter config --enable-linux-desktop
           flutter config --enable-android
+          flutter config --enable-ios
           ${{ matrix.build-command }}
+
       # 添加平台对应的打包步骤
       - name: Package Artifact for Windows
         if: matrix.os == 'windows-latest'
@@ -117,7 +146,7 @@ jobs:
           Compress-Archive -Path "${{ matrix.artifact-path }}\*" -DestinationPath "wetools-windows.zip"
 
       - name: Package Artifact for macOS
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && matrix.platform == 'macos'
         run: |
           # macOS 下可以用 ditto 命令打包为 zip 文件
           ditto -c -k --sequesterRsrc --keepParent "${{ matrix.artifact-path }}" wetools-macos.zip
@@ -129,10 +158,21 @@ jobs:
           tar -czvf wetools-linux.tar.gz -C "${{ matrix.artifact-path }}" .
 
       # 添加 Android APK 复制步骤
-#      - name: Copy Android APK
-#        if: matrix.platform == 'android'
-#        run: |
-#          cp "${{ matrix.artifact-path }}" wetools-android.apk
+      - name: Copy Android APK
+        if: matrix.platform == 'android'
+        run: |
+          cp "${{ matrix.artifact-path }}" wetools-android.apk
+
+      # 为 iOS 创建 IPA 文件
+      - name: Create iOS IPA
+        if: matrix.platform == 'ios'
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload
+          zip -r wetools-ios.ipa Payload
+          mv wetools-ios.ipa ../../../
+          cd ../../../
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -140,9 +180,10 @@ jobs:
           name: ${{ matrix.platform }}
           path: |
             ${{ matrix.os == 'windows-latest' && 'wetools-windows.zip' || '' }}
-            ${{ matrix.os == 'macos-latest' && 'wetools-macos.zip' || '' }}
+            ${{ (matrix.os == 'macos-latest' && matrix.platform == 'macos') && 'wetools-macos.zip' || '' }}
             ${{ (matrix.os == 'ubuntu-latest' && matrix.platform == 'linux') && 'wetools-linux.tar.gz' || '' }}
-#            ${{ matrix.platform == 'android' && 'wetools-android.apk' || '' }}
+            ${{ matrix.platform == 'android' && 'wetools-android.apk' || '' }}
+            ${{ matrix.platform == 'ios' && 'wetools-ios.ipa' || '' }}
 
       # 注释掉或删除这些步骤
       # - name: Import Certificate
@@ -245,4 +286,23 @@ jobs:
           asset_path: ./artifacts/macos/wetools-macos.zip
           asset_name: wetools-macos.zip
           asset_content_type: application/zip
-
+          
+      - name: Upload Release Assets - Android
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/android/wetools-android.apk
+          asset_name: wetools-android.apk
+          asset_content_type: application/vnd.android.package-archive
+          
+      - name: Upload Release Assets - iOS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/ios/wetools-ios.ipa
+          asset_name: wetools-ios.ipa
+          asset_content_type: application/octet-stream
