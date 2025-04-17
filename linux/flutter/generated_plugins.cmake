@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_linux
   flutter_acrylic
   pasteboard
+  printing
   screen_retriever_linux
   tray_manager
   url_launcher_linux

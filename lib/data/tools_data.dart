@@ -16,6 +16,7 @@ import '../pages/clipboard_page.dart';
 import '../pages/hosts_page.dart';
 import '../pages/ftp_page.dart';
 import '../pages/process_page.dart';
+import '../pages/watermark_page.dart';
 
 /// 工具数据提供类
 class ToolsData {
@@ -221,6 +222,16 @@ class ToolsData {
       page: const HashPage(),
       groupId: 'crypto',
       tags: ['Hash', 'MD5', 'SHA'],
+    ),
+    // 添加水印工具
+    ToolModel(
+      id: 'watermark',
+      name: '图片/PDF水印',
+      description: '为图片或PDF添加文字/图片水印',
+      icon:
+          Icons.water_drop, // 使用water_drop图标作为替代，因为Flutter的Icons中没有watermark图标
+      groupId: 'crypto', // 假设您有一个图像处理分组，如果没有请创建一个
+      page: const WatermarkPage(),
     ),
   ];
 
